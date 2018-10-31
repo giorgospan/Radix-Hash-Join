@@ -1,2 +1,5 @@
-# Project
-Project Di
+# Project 
+
+Ανάπτυξη Λογισμικού για Πληροφοριακά Συστήματα
+
+  * This is a private repository.
