@@ -136,5 +136,32 @@ struct PlaceHolder* createSecondR(
 		// arr[i].hashValue = firstHash(column[i], significantsForHash);
 		// arr[i].rowId = i;
 		// // printf("%u\n", column[i]);
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////
+		// Pernoume to hashValue tou Placeholder
+		uint32_t h = originalR[i].hashValue;
+	
+		// Pame sto pSum kai vriskoume pou ksekinane ta PlaceHolders ston RTonos
+		// me auto to hashValue 
+		uint32_t offset = pSum[h];
+
+		// Copy ta pedia apo to ena PlaceHolder [originalR] sto allo [RTonos]
+		arr[offset].value 		= originalR[i].value;
+		arr[offset].hashValue 	= h;
+		arr[offset].rowId 		= originalR[i].rowId;
+
+		// Ta PlaceHolders me auto to hashValue tha kseksinoun pleon, 
+		// apo thn epomeni thesi
+
+		// Otan erthei kapoia stigmi se epomeno iteration kapoio PlaceHolder me auto to hashValue
+		// that mpei apo katw apo auto pou molis topothetisame.
+		pSum[h]++;
+
+		// SHMEIWSH: //
+		// Me auton ton tropo "xanoume" ta dedomena tou pSum 
+		// Afou ta kanoume increment sthn teleutaia entolh.
+		// Dhladh an meta sthn askisi ton xreiazomaste sthn arxikh tou
+		// morfi tha prepei na exoume ena copy.
+		////////////////////////////////////////////////////////////////////////////////////////////////
 	}
 }
