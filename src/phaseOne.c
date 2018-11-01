@@ -11,7 +11,7 @@ uint32_t *selectColumn(uint32_t **array, uint32_t columnNumber)
 
 void columnPrint(uint32_t *column, uint32_t columnSize)
 {
-	int i = 0;
+	uint32_t i = 0;
 	printf("~~\n");
 	for (i = 0; i < columnSize; i++)
 		printf("%u\n", column[i]);
@@ -20,7 +20,7 @@ void columnPrint(uint32_t *column, uint32_t columnSize)
 
 void printArray(uint32_t *array, uint32_t size)
 {
-	int i;
+	uint32_t i;
 	for (i = 0; i < size; i++)
 		printf("%u | ", array[i]);
 	printf("\n");
@@ -28,7 +28,7 @@ void printArray(uint32_t *array, uint32_t size)
 
 struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize)
 {
-	int i;
+	uint32_t i;
 	struct PlaceHolder *arr = malloc(columnSize * sizeof(struct PlaceHolder));
 	for (i = 0; i < columnSize; i++)
 	{
@@ -43,125 +43,116 @@ struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize)
 	return arr; 
 }
 
-struct tuple* findSizeOfHistogram(struct PlaceHolder* data, uint32_t columnSize, uint32_t *histSize)
+uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 {
-	int i;
-	int j;
-	uint32_t *countArray;
-	uint32_t histogramSize = 0;
-	countArray = malloc(rangeOfValues * sizeof(uint32_t));
+	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+	uint32_t i;
+	uint32_t *countArray  = malloc(rangeOfValues * sizeof(uint32_t));
+
+	// printArrayOfStructs(data, columnSize);
 	
 	/* Making sure that we have 0 in every element */
 	/* We are basicly doing a counting sort*/
+
+	// printArray(countArray, rangeOfValues);
+	
 	for (i = 0; i < rangeOfValues; ++i) 
 		countArray[i] = 0;
 
 	// printArray(countArray, rangeOfValues);
 	
-	for (i = 0; i < columnSize; ++i) 
+	for (i = 0; i < columnSize; ++i)
 		countArray[data[i].hashValue] += 1;
 
 	printArray(countArray, rangeOfValues);
 
-	for (i = 0; i < rangeOfValues; i++)
-	{
-		if (countArray[i] != 0)
-			histogramSize++;
-	}
-
-	printf("histogramSize is %u\n", histogramSize);
-
-	struct tuple* histogram = malloc(histogramSize * sizeof(struct tuple));
-
-	i = 0;
-	j = 0;
-	while(i < rangeOfValues)
-	{
-		if (countArray[i] > 0)
-		{
-			/* This is the hashValue */
-			histogram[j].key = i;
-			/* This is it's occurence */
-			histogram[j].payLoad = countArray[i];
-			/* Move to the next tuple*/
-			j++;
-		}
-		i++;
-	}
-
-	for (i = 0; i < histogramSize; i++)
-		printTuple(&(histogram[i]));
-
-	*histSize = histogramSize;
-	return histogram;
+	return countArray;
 }
 
 
-struct tuple* createPsum(struct tuple* hist, uint32_t histSize)
+uint32_t** createPsum(uint32_t* hist)
 {
-	int i;
+	uint32_t i;
 	uint32_t sum = 0;
-	struct tuple* pSum = malloc(histSize * sizeof(struct tuple));	
-	for (i = 0; i < histSize; i++)
+	uint32_t **pSum = malloc(rangeOfValues * sizeof(uint32_t*));
+
+	/* NULL MEANS THE HASH VALUE IS NOT IN R*/
+	for (i = 0; i < rangeOfValues; i++)
+		pSum[i] = NULL;
+	
+	for (i = 0; i < rangeOfValues; i++)
 	{
-		printf("sum %u\n", sum );
-		/* Get the hashValue */
-		pSum[i].key = hist[i].key;
-		/* Add the sum */
-		pSum[i].payLoad = sum;
-		sum += hist[i].payLoad;
+		if (hist[i] != 0)
+		{
+			pSum[i] = malloc(sizeof(uint32_t));
+			*(pSum[i]) = sum;
+			sum += hist[i];
+		}
 	}
 
-	printArrayOfTuples(hist, histSize);	
-
-	printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
-
-	printArrayOfTuples(pSum, histSize);
-
+	printPsum(pSum);
 	return pSum;
 }
 
-struct PlaceHolder* createSecondR(
-	struct PlaceHolder* originalR, uint32_t columnSize, struct tuple* pSum, uint32_t pSumSize)
+void printPsum(uint32_t **pSum)
 {
-	int i;
-	/* j indexes pSum*/
-	int j = 0;
+	printf("###############################################################################\n");
+	int i = 0;
+	for (i = 0; i < rangeOfValues; i++)
+	{
+		if (pSum[i] == NULL)
+			printf("index %u NULL\n", i);
+		else
+			printf("index %u %u\n", i, *(pSum[i]));
+	}
+}
+
+void deletepSum(uint32_t **pSum)
+{
+	int i = 0;
+	for (i = 0; i < rangeOfValues; i++)
+	{
+		if (pSum[i] != NULL)
+			free(pSum[i]);
+	}
+	free(pSum);
+}
+
+struct PlaceHolder* createSecondR(struct PlaceHolder* originalR, uint32_t columnSize, uint32_t** pSum)
+{
+	uint32_t i;
 	struct PlaceHolder *arr = malloc(columnSize * sizeof(struct PlaceHolder));
 
 	for (i = 0; i < columnSize; i++)
-	{
-		// if (pSum[j] == 0)
-		// arr[i].value = column[i];
-		// arr[i].hashValue = firstHash(column[i], significantsForHash);
-		// arr[i].rowId = i;
-		// // printf("%u\n", column[i]);
-		
-		////////////////////////////////////////////////////////////////////////////////////////////////
-		// Pernoume to hashValue tou Placeholder
+	{	
+		/* Get the hashValue from R */
 		uint32_t h = originalR[i].hashValue;
 	
-		// Pame sto pSum kai vriskoume pou ksekinane ta PlaceHolders ston RTonos
-		// me auto to hashValue 
-		uint32_t offset = pSum[h];
+		/* Go to pSum and find where we need to place it in secondR */
+		uint32_t offset;
+		if (pSum[h] != NULL)
+		{
+			offset = *(pSum[h]);
+			/* Increment the value to know where to put he next element with the same hashValue*/
+			/* With this we lose the original representation of pSum*/
+			/* If we want to have access we must create a acopy before entering this for loop*/
+			(*pSum[h])++;
+		}
+		else
+		{
+			/* This basicly never happens because we will never access an element of pSum
+			that has it's value NULL, because if it is NULL there is no such hashValue in the originalR */
+			printf("Undefined State\n");
+			exit(0);
+		}
 
-		// Copy ta pedia apo to ena PlaceHolder [originalR] sto allo [RTonos]
+		/* Just copy the fields of the originalR to secondR */
 		arr[offset].value 		= originalR[i].value;
 		arr[offset].hashValue 	= h;
 		arr[offset].rowId 		= originalR[i].rowId;
-
-		// Ta PlaceHolders me auto to hashValue tha kseksinoun pleon, 
-		// apo thn epomeni thesi
-
-		// Otan erthei kapoia stigmi se epomeno iteration kapoio PlaceHolder me auto to hashValue
-		// that mpei apo katw apo auto pou molis topothetisame.
-		pSum[h]++;
-
-		// SHMEIWSH: //
-		// Me auton ton tropo "xanoume" ta dedomena tou pSum 
-		// Afou ta kanoume increment sthn teleutaia entolh.
-		// Dhladh an meta sthn askisi ton xreiazomaste sthn arxikh tou
-		// morfi tha prepei na exoume ena copy.
-		////////////////////////////////////////////////////////////////////////////////////////////////
 	}
+	/* Now we basicly have created a new array secondR which is the original sorted by it's hashValue */
+	printPsum(pSum);
+	printArrayOfStructs(arr, columnSize);
+	return arr;
 }

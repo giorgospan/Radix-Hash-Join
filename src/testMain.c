@@ -9,9 +9,9 @@ int main(int argc, char const *argv[])
 	srand(time(NULL));
 	uint32_t value = 73;
 	uint32_t size;
-	printNumInBinary(value);
-	printf("\nLength of num is %d\n", sizeOfNumInBinary(value));
-	firstHash(value, 3);
+	// printNumInBinary(value);
+	// printf("\nLength of num is %d\n", sizeOfNumInBinary(value));
+	// firstHash(value, 3);
 
 
 	printf("------------------------------------------------------------------------------\n");
@@ -37,10 +37,10 @@ int main(int argc, char const *argv[])
 	uint32_t sizeOfHistogram;
 	struct PlaceHolder *demi = convertToStructs(selectColumn(p, 0), cols);
 	// countsort(demi, cols);
-	struct tuple* histoGram = findSizeOfHistogram(demi, cols, &sizeOfHistogram);
-	struct tuple* pSum = createPsum(histoGram, sizeOfHistogram);
+	uint32_t* histoGram = createHistogram(demi, cols);
+	uint32_t** pSum = createPsum(histoGram);
 	
-	struct PlaceHolder *finalR =  createSecondR(demi, cols, pSum, sizeOfHistogram);
+	struct PlaceHolder *finalR =  createSecondR(demi, cols, pSum);
 
 	// printf("******************************    PHASE TWO    *******************************\n");
 
@@ -53,7 +53,8 @@ int main(int argc, char const *argv[])
 	free(demi);
 	// deAllocateStructs(demi);
 	free(histoGram);
-	free(pSum);
+	deletepSum(pSum);
+	free(finalR);
 	deAllocateArray(p, rows);
 	return 0;
 }
