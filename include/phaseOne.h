@@ -19,12 +19,12 @@ void printArray(uint32_t *array, uint32_t size);
 /* Make structs from column */
 struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize);
 
-/* Find how many hashValues are in the structs in order to declare the array Hist
-	The total number of structs is the same as a column
-	and Create the new array Hist */
+/* Ceates the histogram which has the times a hashValue occcurs in the originalR 
+	Histogram is of size rangeOfValues */
 uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize);
 
-/* Create Psum hist */
+/* Create Psum histogram which has at which offset should every hashValue start in secondR
+	pSum is also of size rangeOfValues */
 uint32_t** createPsum(uint32_t* hist);
 
 /* Print pSum */
