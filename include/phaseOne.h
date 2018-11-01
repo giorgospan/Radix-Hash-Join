@@ -22,13 +22,18 @@ struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize);
 /* Find how many hashValues are in the structs in order to declare the array Hist
 	The total number of structs is the same as a column
 	and Create the new array Hist */
-struct tuple* findSizeOfHistogram(struct PlaceHolder* data, uint32_t columnSize, uint32_t *histSize);
+uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize);
 
 /* Create Psum hist */
-struct tuple* createPsum(struct tuple* hist, uint32_t histSize);
+uint32_t** createPsum(uint32_t* hist);
+
+/* Print pSum */
+void printPsum(uint32_t **pSum);
+
+/* Delete pSum */
+void deletepSum(uint32_t **pSum);
 
 /* Finish The Phase by creating the FinalArray */
-struct PlaceHolder* createSecondR(
-	struct PlaceHolder* originalR, uint32_t columnSize, struct tuple* pSum, uint32_t pSumSize);
+struct PlaceHolder* createSecondR(struct PlaceHolder* originalR, uint32_t columnSize, uint32_t** pSum);
 
 #endif
