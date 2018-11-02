@@ -16,6 +16,22 @@ struct tuple
 	uint32_t payLoad;
 };
 
+struct relation
+{
+	uint32_t **inputRelation;
+	uint32_t rows;
+	uint32_t cols;
+	uint32_t joinCol;
+
+	struct PlaceHolder *demi;
+	uint32_t *histoGram;
+	uint32_t **pSum;
+	struct PlaceHolder *final;
+
+	// + some stuff for phaseTwo [will be added in a later commit]
+};
+
+
 /* Just Print the damn thing 
 	Pass by refrence for less overhead */
 void printStruct(struct PlaceHolder* structToPrint);
@@ -32,6 +48,15 @@ void printArrayOfStructs(struct PlaceHolder* arrayToPrint, uint32_t size);
 
 /* Just free the memory
 	OBSELETE */
-void deAllocateStructs(struct PlaceHolder* structToDelete);
+// void deAllocateStructs(struct PlaceHolder* structToDelete);
+
+/* Create a new struct relation object
+	and initialize its fields */
+void initializeRelation(struct relation** R);
+
+/* Deallocate the space allocated 
+	for the fields of the relation 
+	and of course the relation itself */
+void deleteRelation(struct relation* R);
 
 #endif
