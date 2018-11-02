@@ -49,8 +49,8 @@ void inputCreator()
 
 	// uint32_t numOfTuples = rand() % 10 + 20;
 	// uint32_t numOfColumns = rand() % 10 + 5;
-	uint32_t numOfTuples = 10;
-	uint32_t numOfColumns = 3;
+	uint32_t numOfTuples = 300;
+	uint32_t numOfColumns = 4;
 
 	if((fp = fopen("input.bin", "wb")) == NULL)
 	{
@@ -64,12 +64,13 @@ void inputCreator()
 	{
 		for (j = 0; j < numOfColumns; ++j)
 		{
-			uint32_t r = rand()  % 10 + 30;
+			// uint32_t r = rand()  % 10 + 30;	// Range: 30 ~> 40
+			uint32_t r = rand()  % 10000000; 	// Range: 0 ~> 10.000.000
 			fwrite(&r, sizeof(uint32_t), 1, fp);
 		}
 	}
 
-	/* Optional Done String */
+	/* Optional "Done" String */
 	// uint32_t s[] = "Done";
 	// fwrite(s, sizeof(s), 1, fp);
 	
@@ -79,12 +80,15 @@ void inputCreator()
 void createAndRead()
 {
 	inputCreator();
-	inputReader();
+	// inputReader();
 }
 
 
 void prettyArrayPrint(uint32_t **arr, uint32_t numOfRows, uint32_t numOfColumns)
 {
+
+	/* Unfortunatelly, it doesn't print array in a pretty way 
+		if the numbers are big [i.e:many digits long]	*/
 	uint32_t i;
 	uint32_t j;
 
@@ -143,9 +147,9 @@ uint32_t** createArrayAndInit(uint32_t *rowSize, uint32_t *colSize)
 	}
 
 	fread(&numOfTuples, sizeof(uint32_t), 1, fp);
-	printf("Num of Tuples %u\n", numOfTuples);
+	// printf("Num of Tuples %u\n", numOfTuples);
 	fread(&numOfColumns, sizeof(uint32_t), 1, fp);
-	printf("Num of Columns %u\n", numOfColumns);
+	// printf("Num of Columns %u\n", numOfColumns);
 
 	/* First we allocate the array */
 	array = allocateArray(numOfColumns, numOfTuples);

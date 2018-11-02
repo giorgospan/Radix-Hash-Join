@@ -1,6 +1,9 @@
 #include "phaseOne.h"
 #include "bitWiseUtil.h"
 
+const int significantsForHash = 5;
+const int rangeOfValues = 32;
+
 
 uint32_t *selectColumn(uint32_t **array, uint32_t columnNumber)
 {
@@ -38,14 +41,13 @@ struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize)
 		// printf("%u\n", column[i]);
 	}
 
-	printArrayOfStructs(arr, columnSize);	
-
+	// printArrayOfStructs(arr, columnSize);	
 	return arr; 
 }
 
 uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 {
-	printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
+	// printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 	uint32_t i;
 	uint32_t *countArray  = malloc(rangeOfValues * sizeof(uint32_t));
 
@@ -54,8 +56,6 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 	/* Making sure that we have 0 in every element */
 	/* We are basically doing a counting sort*/
 
-	// printArray(countArray, rangeOfValues);
-	
 	for (i = 0; i < rangeOfValues; ++i) 
 		countArray[i] = 0;
 
@@ -64,6 +64,7 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 	for (i = 0; i < columnSize; ++i)
 		countArray[data[i].hashValue] += 1;
 
+	printf("\nHistogram:\n");
 	printArray(countArray, rangeOfValues);
 
 	return countArray;
@@ -76,7 +77,7 @@ uint32_t** createPsum(uint32_t* hist)
 	uint32_t sum = 0;
 	uint32_t **pSum = malloc(rangeOfValues * sizeof(uint32_t*));
 
-	/* NULL MEANS THE HASH VALUE IS NOT IN R*/
+	/* NULL MEANS THE HASH VALUE IS NOT IN ARRAY*/
 	for (i = 0; i < rangeOfValues; i++)
 		pSum[i] = NULL;
 	
@@ -90,13 +91,14 @@ uint32_t** createPsum(uint32_t* hist)
 		}
 	}
 
-	printPsum(pSum);
+	// printf("\nPrefixSum:\n");
+	// printPsum(pSum);
 	return pSum;
 }
 
 void printPsum(uint32_t **pSum)
 {
-	printf("###############################################################################\n");
+	// printf("###############################################################################\n");
 	uint32_t i = 0;
 	for (i = 0; i < rangeOfValues; i++)
 	{
@@ -118,17 +120,17 @@ void deletepSum(uint32_t **pSum)
 	free(pSum);
 }
 
-struct PlaceHolder* createSecondR(struct PlaceHolder* originalR, uint32_t columnSize, uint32_t** pSum)
+struct PlaceHolder* sortArray(struct PlaceHolder* original, uint32_t columnSize, uint32_t** pSum)
 {
 	uint32_t i;
 	struct PlaceHolder *arr = malloc(columnSize * sizeof(struct PlaceHolder));
 
 	for (i = 0; i < columnSize; i++)
 	{	
-		/* Get the hashValue from R */
-		uint32_t h = originalR[i].hashValue;
+		/* Get the hashValue from original array */
+		uint32_t h = original[i].hashValue;
 	
-		/* Go to pSum and find where we need to place it in secondR */
+		/* Go to pSum and find where we need to place it in second(i.e: final) array */
 		uint32_t offset;
 		if (pSum[h] != NULL)
 		{
@@ -141,18 +143,18 @@ struct PlaceHolder* createSecondR(struct PlaceHolder* originalR, uint32_t column
 		else
 		{
 			/* This basically never happens because we will never access an element of pSum
-			that has its value NULL, because if it is NULL there is no such hashValue in the originalR */
+			that has its value NULL, because if it is NULL there is no such hashValue in the original array */
 			printf("Undefined State\n");
-			exit(0);
+			exit(1);
 		}
 
-		/* Just copy the fields of the originalR to secondR */
-		arr[offset].value 		= originalR[i].value;
+		/* Just copy the fields of the original array to the second one */
+		arr[offset].value 		= original[i].value;
 		arr[offset].hashValue 	= h;
-		arr[offset].rowId 		= originalR[i].rowId;
+		arr[offset].rowId 		= original[i].rowId;
 	}
-	/* Now we basically have created a new array secondR which is the original sorted by its hashValue */
-	printPsum(pSum);
-	printArrayOfStructs(arr, columnSize);
+	/* Now we basically have created a new array second array which is the original sorted by its hashValue */
+	// printPsum(pSum);
+	// printArrayOfStructs(arr, columnSize);
 	return arr;
 }

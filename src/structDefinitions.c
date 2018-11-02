@@ -1,10 +1,46 @@
 #include "structDefinitions.h"
+#include "prepareInput.h"
+#include "phaseOne.h"
 
-void deAllocateStructs(struct PlaceHolder* structToDelete)
+void initializeRelation(struct relation** R)
 {
-	free(structToDelete);
+	// Allocate space for struct relation
+	*R = malloc(sizeof(struct relation));
+
+	// Create input file [and print it]
+	createAndRead();
+
+	// Create relation array [and print it]
+	(*R)->inputRelation = createArrayAndInit(&(*R)->rows,&(*R)->cols);
+	// prettyArrayPrint((*R)->inputRelation, (*R)->rows, (*R)->cols);
+
+	// Pick which column we want to join
+	// This is just the number of the column
+	(*R)->joinCol = 0;
+
+	// Set the rest of the fields equal to NULL [optional]
+	(*R)->demi = NULL;
+	(*R)->histoGram = NULL;
+	(*R)->pSum = NULL;
+	(*R)->final = NULL;
 }
 
+void deleteRelation(struct relation* R)
+{
+	free(R->demi);
+	free(R->histoGram);
+	deletepSum(R->pSum);
+	free(R->final);
+	deAllocateArray(R->inputRelation, R->rows);
+	free(R);
+}
+
+//////////////////////////////////////////////////////////////
+//void deAllocateStructs(struct PlaceHolder* structToDelete)//
+//{															//
+//	free(structToDelete);									//
+//}															//
+//////////////////////////////////////////////////////////////
 
 void printStruct(struct PlaceHolder* structToPrint)
 {
