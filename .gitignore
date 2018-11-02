@@ -1,0 +1,10 @@
+# ignore all .o files
+*.o
+
+
+# ignore all .out files
+*.out
+
+
+# ignore all .bin files
+*.bin
