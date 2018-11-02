@@ -3,11 +3,15 @@
 
 uint32_t firstHash(uint32_t num, uint32_t significants)
 {
-	/* Make the h value in binary */
+	/* Make the hashvalue in binary */
 	/* by shifting bits */
 	uint32_t hashValue = num;
 	hashValue <<= 32 - significants;
 	hashValue >>= 32 - significants;
+
+	/* Another way of calculating the hashvalue: 
+		hashValue = num & ((1<<significants)-1); */
+
 	// printf("Hash Value is %u\n", hashValue);
 	return hashValue;
 }

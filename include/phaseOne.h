@@ -4,6 +4,9 @@
 #include "usefulHeaders.h"
 #include "structDefinitions.h"
 
+// L1 data cache size in bytes [might be useful for selecting the best significantsForHash]
+#define CACHE_SIZE 65536 
+
 static const int significantsForHash = 5;
 static const int rangeOfValues = 32;
 

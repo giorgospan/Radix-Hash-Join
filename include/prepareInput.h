@@ -15,7 +15,7 @@ void inputReader();
 void createAndRead();
 
 /* Prints 2d array of uint32_t */
-void preetyArrayPrint(uint32_t**, uint32_t, uint32_t);
+void prettyArrayPrint(uint32_t**, uint32_t, uint32_t);
 
 /* Allocate a 2d array of uint32_t */
 uint32_t** allocateArray(uint32_t, uint32_t);

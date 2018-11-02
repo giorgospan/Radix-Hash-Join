@@ -4,12 +4,16 @@
 void inputReader()
 {
 	FILE *fp = NULL;
-	int i;
-	int j;
+	uint32_t i;
+	uint32_t j;
 	uint32_t numOfTuples;
 	uint32_t numOfColumns;
 
-	fp = fopen("input.bin", "rb");
+	if((fp = fopen("input.bin", "rb")) == NULL)
+	{
+		perror("fopen failed[inputReader]");
+		exit(1);	
+	}
 
 	fread(&numOfTuples, sizeof(uint32_t), 1, fp);
 	printf("Num of Tuples %u\n", numOfTuples);
@@ -23,9 +27,11 @@ void inputReader()
 			uint32_t r;
 			fread(&r, sizeof(uint32_t), 1, fp);
 			// printf("Tuple %u Column %u Value %u\n", i, j, r);
-			printf("T%d C%d %d\n", i, j, r);
+			printf("T%d C%d %d | ", i, j, r);
 		}
+		printf("\n");
 	}
+	printf("\n");
 
 	/* Optional Done String */
 	// uint32_t s[410];
@@ -38,15 +44,19 @@ void inputReader()
 void inputCreator()
 {
 	FILE *fp = NULL;
-	int i;
-	int j;
+	uint32_t i;
+	uint32_t j;
 
-	// int32_t numOfTuples = rand() % 10 + 20;
-	// int32_t numOfColumns = rand() % 10 + 5;
+	// uint32_t numOfTuples = rand() % 10 + 20;
+	// uint32_t numOfColumns = rand() % 10 + 5;
 	uint32_t numOfTuples = 10;
 	uint32_t numOfColumns = 3;
 
-	fp = fopen("input.bin", "wb");
+	if((fp = fopen("input.bin", "wb")) == NULL)
+	{
+		perror("fopen failed[inputCreator]");
+		exit(1);	
+	}
 	fwrite(&numOfTuples, sizeof(uint32_t), 1, fp);
 	fwrite(&numOfColumns, sizeof(uint32_t), 1, fp);
 
@@ -73,12 +83,14 @@ void createAndRead()
 }
 
 
-void preetyArrayPrint(uint32_t ** arr, uint32_t numOfRows, uint32_t numOfColumns)
+void prettyArrayPrint(uint32_t **arr, uint32_t numOfRows, uint32_t numOfColumns)
 {
-	int i;
-	int j;
+	uint32_t i;
+	uint32_t j;
 
-	for (i = 0; i < numOfRows + 15; ++i) printf("=");
+	printf("This is how we store the relation: \n");
+	printf(" ");
+	for (i = 0; i < 3*numOfColumns; ++i) printf("=");
 	printf("\n");
 
 	for (i = 0; i < numOfRows; ++i)
@@ -89,25 +101,26 @@ void preetyArrayPrint(uint32_t ** arr, uint32_t numOfRows, uint32_t numOfColumns
 		printf("|\n");
 	}
 
-	for (i = 0; i < numOfRows + 15; ++i) printf("=");
+	printf(" ");
+	for (i = 0; i < 3*numOfColumns; ++i) printf("=");
 	printf("\n");
 }
 
-uint32_t ** allocateArray(uint32_t numOfRows, uint32_t numOfColumns)
+uint32_t** allocateArray(uint32_t numOfRows, uint32_t numOfColumns)
 {
-	int i;
-	int j;
+	uint32_t i;
+	uint32_t j;
 	uint32_t **arr = malloc(numOfRows * sizeof(uint32_t*));
 	for (i = 0; i < numOfRows; ++i)
 		arr[i] = malloc(numOfColumns * sizeof(uint32_t));
 
-	// preetyArrayPrint(arr, numOfRows, numOfColumns);
+	// prettyArrayPrint(arr, numOfRows, numOfColumns);
 	return arr;
 }
 
 void deAllocateArray(uint32_t **array, uint32_t numOfRows)
 {
-	int i = 0;
+	uint32_t i = 0;
 	for (i = 0; i < numOfRows; i++)
 		free(array[i]);
 	free(array);
@@ -116,15 +129,18 @@ void deAllocateArray(uint32_t **array, uint32_t numOfRows)
 uint32_t** createArrayAndInit(uint32_t *rowSize, uint32_t *colSize)
 {
 	FILE *fp = NULL;
-	int i;
-	int j;
+	uint32_t i;
+	uint32_t j;
 	uint32_t numOfTuples;
 	uint32_t numOfColumns;
 	uint32_t **array = NULL;
 
 	/* Open the file and get the num of Columns */
-
-	fp = fopen("input.bin", "rb");
+	if((fp = fopen("input.bin", "rb")) == NULL)
+	{
+		perror("fopen failed[createArrayAndInit]");
+		exit(1);	
+	}
 
 	fread(&numOfTuples, sizeof(uint32_t), 1, fp);
 	printf("Num of Tuples %u\n", numOfTuples);
@@ -150,7 +166,7 @@ uint32_t** createArrayAndInit(uint32_t *rowSize, uint32_t *colSize)
 	/* The index trick to have it in a pseudo column major index*/
 	*rowSize = numOfColumns;
 	*colSize = numOfTuples;
-	preetyArrayPrint(array, numOfColumns, numOfTuples);
+	// prettyArrayPrint(array, numOfColumns, numOfTuples);
 	
 	fclose(fp);
 	return array;

@@ -25,14 +25,14 @@ void printTuple(struct tuple* structToPrint)
 
 void printArrayOfTuples(struct tuple* arrayToPrint, uint32_t size)
 {
-	int i;
+	uint32_t i;
 	for (i = 0; i < size; i++)
 		printTuple(&(arrayToPrint[i]));
 }
 
 void printArrayOfStructs(struct PlaceHolder* arrayToPrint, uint32_t size)
 {
-	int i;
+	uint32_t i;
 	for (i = 0; i < size; i++)
 		printStruct(&(arrayToPrint[i]));
 }

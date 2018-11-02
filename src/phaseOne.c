@@ -52,7 +52,7 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 	// printArrayOfStructs(data, columnSize);
 	
 	/* Making sure that we have 0 in every element */
-	/* We are basicly doing a counting sort*/
+	/* We are basically doing a counting sort*/
 
 	// printArray(countArray, rangeOfValues);
 	
@@ -97,7 +97,7 @@ uint32_t** createPsum(uint32_t* hist)
 void printPsum(uint32_t **pSum)
 {
 	printf("###############################################################################\n");
-	int i = 0;
+	uint32_t i = 0;
 	for (i = 0; i < rangeOfValues; i++)
 	{
 		if (pSum[i] == NULL)
@@ -109,7 +109,7 @@ void printPsum(uint32_t **pSum)
 
 void deletepSum(uint32_t **pSum)
 {
-	int i = 0;
+	uint32_t i = 0;
 	for (i = 0; i < rangeOfValues; i++)
 	{
 		if (pSum[i] != NULL)
@@ -140,8 +140,8 @@ struct PlaceHolder* createSecondR(struct PlaceHolder* originalR, uint32_t column
 		}
 		else
 		{
-			/* This basicly never happens because we will never access an element of pSum
-			that has it's value NULL, because if it is NULL there is no such hashValue in the originalR */
+			/* This basically never happens because we will never access an element of pSum
+			that has its value NULL, because if it is NULL there is no such hashValue in the originalR */
 			printf("Undefined State\n");
 			exit(0);
 		}
@@ -151,7 +151,7 @@ struct PlaceHolder* createSecondR(struct PlaceHolder* originalR, uint32_t column
 		arr[offset].hashValue 	= h;
 		arr[offset].rowId 		= originalR[i].rowId;
 	}
-	/* Now we basicly have created a new array secondR which is the original sorted by it's hashValue */
+	/* Now we basically have created a new array secondR which is the original sorted by its hashValue */
 	printPsum(pSum);
 	printArrayOfStructs(arr, columnSize);
 	return arr;
