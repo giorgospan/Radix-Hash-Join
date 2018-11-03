@@ -1,9 +1,6 @@
 #include "usefulHeaders.h"
 #include "structDefinitions.h"
-
-/* This is a declaration, not a definition */
-/* We've defined this variable in phaseOne.c */
-const int rangeOfValues;
+#include "phaseOne.h" /* For accessing rangeOfValues variable */
 
 void createIndexPerBucket(struct relation* R)
 {

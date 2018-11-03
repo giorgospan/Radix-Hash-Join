@@ -1,6 +1,6 @@
 one: clean
 	gcc -I include src/*.c
-	# valgrind -v ./a.out 
+	# valgrind ./a.out 
 	./a.out 
 
 # clean up

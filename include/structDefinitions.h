@@ -38,7 +38,9 @@ struct relation
 	uint32_t **pSum;
 	struct PlaceHolder *final;
 
-	/* One struct index per bucket */
+	/* One struct index per bucket 
+		A relation has many buckets 
+		Consequently we need an array of indexes */
 	struct index *indexArray;
 };
 

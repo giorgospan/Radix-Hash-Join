@@ -4,10 +4,36 @@
 #include "structDefinitions.h"
 #include "phaseOne.h"
 #include "phaseTwo.h"
+#include "list.h"
 
 
 int main(int argc, char const *argv[])
 {
+	/* Used for testing list implementation */
+	///////////////////////////////////////////////////////////////
+	// struct List* list;
+	// struct resultTuple* t = malloc(sizeof(struct resultTuple));
+	// ListCreate(&list);
+	//
+	// int i;
+	// for(i=0;i<80000;++i)
+	// {
+	//
+	// 	 Create tuple 
+	// 	t->rowId1=i;
+	// 	t->rowId2=2*i;
+	//
+	// 	/* Insert it to list */
+	// 	ListInsert(list,t);
+	// }
+	//
+	// ListPrint(list);
+	// ListDestroy(list);
+	// free(t);
+	// return 0;
+	////////////////////////////////////////////////////////////////
+
+
 	srand(time(NULL));
 	// uint32_t value = 73;
 	// uint32_t size;
@@ -62,8 +88,6 @@ int main(int argc, char const *argv[])
 		but we[as programmers] decide to store each row in a column 
 		just to take advantage of the way arrays are stored in main memory */
 
-	// printf("R rows:%d\n",R->cols);
-	// printf("S rows:%d\n",S->cols);
 	if(R->cols < S->cols)
 		createIndexPerBucket(R);
 	else
