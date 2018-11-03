@@ -3,13 +3,12 @@
 #include "phaseTwo.h"
 #include "phaseOne.h" /* For accessing rangeOfValues variable */
 
-/* We'll change it later */
+/* It'll change if we change secondHash(..) */
 uint32_t rangeOfHash2=10;
 
 void initializeIndexArray(struct relation* R)
 {
 	uint32_t i,j;
-	uint32_t start;
 	uint32_t bucketSize;
 
 	/* Firstly, we need to allocate space for indexArray */	
@@ -46,7 +45,50 @@ void initializeIndexArray(struct relation* R)
 	}
 }
 
+void buildIndexPerBucket(struct relation* R)
+{
+	uint32_t i;
+	int32_t j;
+	int32_t start;
+	uint32_t bucketSize;
+	uint32_t hash;
 
+	// For every bucket
+	for(i=0;i<rangeOfValues;i++)
+	{
+		/* If bucket is not empty[i.e: has an index] */
+		if(R->indexArray[i] != NULL)
+		{
+
+			// Fetch bucket's starting point from pSum array
+			// Remember: pSum is array with pointers to int
+			start = *(R->pSum[i]);
+
+			// Fetch bucket's size from histoGram array
+			// Remember: histoGram is array with ints
+			bucketSize = R->histoGram[i];
+
+			/* Scan from the bottom of the bucket till the top */
+			for(j=start+bucketSize-1;j>=start;j--)
+			{
+				hash = secondHash(R->final[j].value);
+
+				// if(R->indexArray[i]->bucketArray[hash] == 0)
+				// 	R->indexArray[i]->bucketArray[hash] =j;
+				// else
+				// 	/* Find the first zero in chainArray 
+				// 		by following the chain and
+				// 		save "j" in that place */
+			}	
+		}
+	}
+}
+
+
+uint32_t secondHash(uint32_t num)
+{
+	return num % 10;
+}
 
 void deleteIndexArray(struct index** indArray)
 {

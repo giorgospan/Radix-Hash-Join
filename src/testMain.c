@@ -95,6 +95,7 @@ int main(int argc, char const *argv[])
 		smaller = S;
 
 	initializeIndexArray(smaller);
+	buildIndexPerBucket(smaller);
 
 	// PHASE THREE [Finding the results]
 	// printf("******************************************************************************\n");
