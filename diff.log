@@ -1,0 +1,179 @@
+diff --git a/Makefile b/Makefile
+index 41ce701..b2aba95 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,5 +1,5 @@
+ one: clean
+-	gcc -I include src/testMain.c src/bitWiseUtil.c src/prepareInput.c src/phaseOne.c src/structDefinitions.c
++	gcc -I include src/*.c
+ 	# valgrind -v ./a.out 
+ 	./a.out 
+ 
+diff --git a/include/phaseOne.h b/include/phaseOne.h
+index 49094be..e0d6186 100644
+--- a/include/phaseOne.h
++++ b/include/phaseOne.h
+@@ -19,6 +19,12 @@ void columnPrint(uint32_t *column, uint32_t columnSize);
+ /* Prints An array as a row*/
+ void printArray(uint32_t *array, uint32_t size);
+ 
++/* Print pSum */
++void printPsum(uint32_t **pSum);
++
++/* Select the appropriate column */
++uint32_t *selectColumn(uint32_t **array, uint32_t columnNumber);
++
+ /* Makes structs from column */
+ struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize);
+ 
+@@ -30,9 +36,6 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize);
+ 	pSum is also of size rangeOfValues */
+ uint32_t** createPsum(uint32_t* hist);
+ 
+-/* Print pSum */
+-void printPsum(uint32_t **pSum);
+-
+ /* Delete pSum */
+ void deletepSum(uint32_t **pSum);
+ 
+diff --git a/include/structDefinitions.h b/include/structDefinitions.h
+index fd0ca9e..ff2af27 100644
+--- a/include/structDefinitions.h
++++ b/include/structDefinitions.h
+@@ -16,6 +16,16 @@ struct tuple
+ 	uint32_t payLoad;
+ };
+ 
++/* We could also use the struct tuple from above */
++struct resultTuple
++{
++	/* rowId from R relation */
++	uint32_t rowId1;
++	/* rowId from S relation */
++	uint32_t rowId2;
++};
++
++
+ struct relation
+ {
+ 	uint32_t **inputRelation;
+@@ -28,7 +38,16 @@ struct relation
+ 	uint32_t **pSum;
+ 	struct PlaceHolder *final;
+ 
+-	// + some stuff for phaseTwo [will be added in a later commit]
++	/* One struct index per bucket */
++	struct index *indexArray;
++};
++
++struct index
++{
++	/* These are the two arrays
++		used for the indexing of a single bucket */
++	uint32_t *chainArray;
++	uint32_t *bucketArray;	
+ };
+ 
+ 
+diff --git a/src/phaseOne.c b/src/phaseOne.c
+index 14993f2..b8c0012 100644
+--- a/src/phaseOne.c
++++ b/src/phaseOne.c
+@@ -64,8 +64,8 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
+ 	for (i = 0; i < columnSize; ++i)
+ 		countArray[data[i].hashValue] += 1;
+ 
+-	printf("\nHistogram:\n");
+-	printArray(countArray, rangeOfValues);
++	// printf("\nHistogram:\n");
++	// printArray(countArray, rangeOfValues);
+ 
+ 	return countArray;
+ }
+diff --git a/src/prepareInput.c b/src/prepareInput.c
+index 2363276..5e8b0be 100644
+--- a/src/prepareInput.c
++++ b/src/prepareInput.c
+@@ -47,7 +47,7 @@ void inputCreator()
+ 	uint32_t i;
+ 	uint32_t j;
+ 
+-	// uint32_t numOfTuples = rand() % 10 + 20;
++	// uint32_t numOfTuples = rand()  % 9000000 + 1000000;	// Range: 1.000.000 ~> 10.000.000
+ 	// uint32_t numOfColumns = rand() % 10 + 5;
+ 	uint32_t numOfTuples = 300;
+ 	uint32_t numOfColumns = 4;
+diff --git a/src/structDefinitions.c b/src/structDefinitions.c
+index ab1a6ba..471a365 100644
+--- a/src/structDefinitions.c
++++ b/src/structDefinitions.c
+@@ -23,6 +23,7 @@ void initializeRelation(struct relation** R)
+ 	(*R)->histoGram = NULL;
+ 	(*R)->pSum = NULL;
+ 	(*R)->final = NULL;
++	(*R)->indexArray = NULL;
+ }
+ 
+ void deleteRelation(struct relation* R)
+diff --git a/src/testMain.c b/src/testMain.c
+index 806d5b2..0090bde 100644
+--- a/src/testMain.c
++++ b/src/testMain.c
+@@ -3,7 +3,7 @@
+ #include "prepareInput.h"
+ #include "structDefinitions.h"
+ #include "phaseOne.h"
+-
++#include "phaseTwo.h"
+ 
+ 
+ int main(int argc, char const *argv[])
+@@ -16,6 +16,7 @@ int main(int argc, char const *argv[])
+ 	// firstHash(value, 3);
+ 	// printf("------------------------------------------------------------------------------\n");
+ 
++	uint32_t i;	
+ 	struct relation *R,*S;
+ 	initializeRelation(&R);
+ 	initializeRelation(&S);
+@@ -29,7 +30,6 @@ int main(int argc, char const *argv[])
+ 	////////////////////////////////////////////////
+ 	// uint32_t *currentColumn = selectColumn(p, 0);
+ 	// columnPrint(currentColumn, cols);			
+-	// uint32_t i;									
+ 	// for (i = 0; i < cols; i++)					
+ 	// 	printf("%u\n", currentColumn[i]);			
+ 	////////////////////////////////////////////////
+@@ -53,9 +53,21 @@ int main(int argc, char const *argv[])
+ 	S->final = sortArray(S->demi,S->cols,S->pSum);
+ 
+ 	// PHASE TWO [Indexing]
+-	// printf("******************************************************************************\n");
+-	// printf("*                              PHASE TWO                                     *\n");
+-	// printf("******************************************************************************\n");
++	printf("******************************************************************************\n");
++	printf("*                              PHASE TWO                                     *\n");
++	printf("******************************************************************************\n");
++
++	/* Create index for every bucket of the smaller relation*/
++	/* Reminder: A relation in real life has many number of rows, 
++		but we[as programmers] decide to store each row in a column 
++		just to take advantage of the way arrays are stored in main memory */
++
++	// printf("R rows:%d\n",R->cols);
++	// printf("S rows:%d\n",S->cols);
++	if(R->cols < S->cols)
++		createIndexPerBucket(R);
++	else
++		createIndexPerBucket(S);
+ 
+ 
+ 	// PHASE THREE [Finding the results]
+@@ -64,7 +76,6 @@ int main(int argc, char const *argv[])
+ 	// printf("******************************************************************************\n");
+ 
+ 
+-
+ 	/* FREE*/
+ 
+ 	/* Either OR

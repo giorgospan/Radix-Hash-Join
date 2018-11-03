@@ -19,6 +19,12 @@ void columnPrint(uint32_t *column, uint32_t columnSize);
 /* Prints An array as a row*/
 void printArray(uint32_t *array, uint32_t size);
 
+/* Print pSum */
+void printPsum(uint32_t **pSum);
+
+/* Select the appropriate column */
+uint32_t *selectColumn(uint32_t **array, uint32_t columnNumber);
+
 /* Makes structs from column */
 struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize);
 
@@ -29,9 +35,6 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize);
 /* Create Psum histogram which has at which offset should every hashValue start in sorted array
 	pSum is also of size rangeOfValues */
 uint32_t** createPsum(uint32_t* hist);
-
-/* Print pSum */
-void printPsum(uint32_t **pSum);
 
 /* Delete pSum */
 void deletepSum(uint32_t **pSum);

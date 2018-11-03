@@ -23,6 +23,7 @@ void initializeRelation(struct relation** R)
 	(*R)->histoGram = NULL;
 	(*R)->pSum = NULL;
 	(*R)->final = NULL;
+	(*R)->indexArray = NULL;
 }
 
 void deleteRelation(struct relation* R)

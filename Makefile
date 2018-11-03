@@ -1,5 +1,5 @@
 one: clean
-	gcc -I include src/testMain.c src/bitWiseUtil.c src/prepareInput.c src/phaseOne.c src/structDefinitions.c
+	gcc -I include src/*.c
 	# valgrind -v ./a.out 
 	./a.out 
 

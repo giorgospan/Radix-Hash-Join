@@ -3,7 +3,7 @@
 #include "prepareInput.h"
 #include "structDefinitions.h"
 #include "phaseOne.h"
-
+#include "phaseTwo.h"
 
 
 int main(int argc, char const *argv[])
@@ -16,6 +16,7 @@ int main(int argc, char const *argv[])
 	// firstHash(value, 3);
 	// printf("------------------------------------------------------------------------------\n");
 
+	uint32_t i;	
 	struct relation *R,*S;
 	initializeRelation(&R);
 	initializeRelation(&S);
@@ -29,7 +30,6 @@ int main(int argc, char const *argv[])
 	////////////////////////////////////////////////
 	// uint32_t *currentColumn = selectColumn(p, 0);
 	// columnPrint(currentColumn, cols);			
-	// uint32_t i;									
 	// for (i = 0; i < cols; i++)					
 	// 	printf("%u\n", currentColumn[i]);			
 	////////////////////////////////////////////////
@@ -53,16 +53,27 @@ int main(int argc, char const *argv[])
 	S->final = sortArray(S->demi,S->cols,S->pSum);
 
 	// PHASE TWO [Indexing]
-	// printf("******************************************************************************\n");
-	// printf("*                              PHASE TWO                                     *\n");
-	// printf("******************************************************************************\n");
+	printf("******************************************************************************\n");
+	printf("*                              PHASE TWO                                     *\n");
+	printf("******************************************************************************\n");
+
+	/* Create index for every bucket of the smaller relation*/
+	/* Reminder: A relation in real life has many number of rows, 
+		but we[as programmers] decide to store each row in a column 
+		just to take advantage of the way arrays are stored in main memory */
+
+	// printf("R rows:%d\n",R->cols);
+	// printf("S rows:%d\n",S->cols);
+	if(R->cols < S->cols)
+		createIndexPerBucket(R);
+	else
+		createIndexPerBucket(S);
 
 
 	// PHASE THREE [Finding the results]
 	// printf("******************************************************************************\n");
 	// printf("*                              PHASE THREE                                   *\n");
 	// printf("******************************************************************************\n");
-
 
 
 	/* FREE*/

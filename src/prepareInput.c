@@ -47,7 +47,7 @@ void inputCreator()
 	uint32_t i;
 	uint32_t j;
 
-	// uint32_t numOfTuples = rand() % 10 + 20;
+	// uint32_t numOfTuples = rand()  % 9000000 + 1000000;	// Range: 1.000.000 ~> 10.000.000
 	// uint32_t numOfColumns = rand() % 10 + 5;
 	uint32_t numOfTuples = 300;
 	uint32_t numOfColumns = 4;

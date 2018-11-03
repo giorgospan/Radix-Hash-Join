@@ -64,8 +64,8 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 	for (i = 0; i < columnSize; ++i)
 		countArray[data[i].hashValue] += 1;
 
-	printf("\nHistogram:\n");
-	printArray(countArray, rangeOfValues);
+	// printf("\nHistogram:\n");
+	// printArray(countArray, rangeOfValues);
 
 	return countArray;
 }

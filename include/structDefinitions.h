@@ -16,6 +16,16 @@ struct tuple
 	uint32_t payLoad;
 };
 
+/* We could also use the struct tuple from above */
+struct resultTuple
+{
+	/* rowId from R relation */
+	uint32_t rowId1;
+	/* rowId from S relation */
+	uint32_t rowId2;
+};
+
+
 struct relation
 {
 	uint32_t **inputRelation;
@@ -28,7 +38,16 @@ struct relation
 	uint32_t **pSum;
 	struct PlaceHolder *final;
 
-	// + some stuff for phaseTwo [will be added in a later commit]
+	/* One struct index per bucket */
+	struct index *indexArray;
+};
+
+struct index
+{
+	/* These are the two arrays
+		used for the indexing of a single bucket */
+	uint32_t *chainArray;
+	uint32_t *bucketArray;	
 };
 
 
