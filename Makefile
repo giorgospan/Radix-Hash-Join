@@ -1,7 +1,7 @@
 one: clean
 	gcc -I include src/*.c
-	# valgrind ./a.out 
-	./a.out 
+	valgrind --track-origins=yes ./a.out 
+	# ./a.out 
 
 # clean up
 .PHONY: clean

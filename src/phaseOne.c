@@ -59,13 +59,11 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 	for (i = 0; i < rangeOfValues; ++i) 
 		countArray[i] = 0;
 
-	// printArray(countArray, rangeOfValues);
-	
 	for (i = 0; i < columnSize; ++i)
 		countArray[data[i].hashValue] += 1;
 
-	// printf("\nHistogram:\n");
-	// printArray(countArray, rangeOfValues);
+	printf("\nHistogram:\n");
+	printArray(countArray, rangeOfValues);
 
 	return countArray;
 }
@@ -125,24 +123,36 @@ struct PlaceHolder* sortArray(struct PlaceHolder* original, uint32_t columnSize,
 	uint32_t i;
 	struct PlaceHolder *arr = malloc(columnSize * sizeof(struct PlaceHolder));
 
+	/* Creating a copy of pSum, because we're gonna need it later in phaseTwo */
+	uint32_t **pSumCopy = malloc(rangeOfValues * sizeof(uint32_t*));
+	for (i = 0; i < rangeOfValues; i++)
+	{
+		pSumCopy[i] = NULL;
+		if (pSum[i] != NULL)
+		{
+			pSumCopy[i] = malloc(sizeof(uint32_t));
+			*pSumCopy[i] = *pSum[i];
+		}
+	}
+
 	for (i = 0; i < columnSize; i++)
 	{	
 		/* Get the hashValue from original array */
 		uint32_t h = original[i].hashValue;
 	
-		/* Go to pSum and find where we need to place it in second(i.e: final) array */
+		/* Go to pSumCopy and find where we need to place it in second(i.e: final) array */
 		uint32_t offset;
-		if (pSum[h] != NULL)
+		if (pSumCopy[h] != NULL)
 		{
-			offset = *(pSum[h]);
+			offset = *(pSumCopy[h]);
 			/* Increment the value to know where to put he next element with the same hashValue*/
 			/* With this we lose the original representation of pSum*/
 			/* If we want to have access we must create a acopy before entering this for loop*/
-			(*pSum[h])++;
+			(*pSumCopy[h])++;
 		}
 		else
 		{
-			/* This basically never happens because we will never access an element of pSum
+			/* This basically never happens because we will never access an element of pSumCopy
 			that has its value NULL, because if it is NULL there is no such hashValue in the original array */
 			printf("Undefined State\n");
 			exit(1);
@@ -153,8 +163,10 @@ struct PlaceHolder* sortArray(struct PlaceHolder* original, uint32_t columnSize,
 		arr[offset].hashValue 	= h;
 		arr[offset].rowId 		= original[i].rowId;
 	}
-	/* Now we basically have created a new array second array which is the original sorted by its hashValue */
-	// printPsum(pSum);
-	// printArrayOfStructs(arr, columnSize);
+	/* Delete copy */
+	deletepSum(pSumCopy);
+
+	/* Now we basically have created a new array,second array, which is the original sorted by its hashValue */
+	/* We return it */
 	return arr;
 }

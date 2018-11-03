@@ -83,16 +83,18 @@ int main(int argc, char const *argv[])
 	printf("*                              PHASE TWO                                     *\n");
 	printf("******************************************************************************\n");
 
-	/* Create index for every bucket of the smaller relation*/
-	/* Reminder: A relation in real life has many number of rows, 
+	/* Friendly Reminder: A relation in real life has many number of rows, 
 		but we[as programmers] decide to store each row in a column 
 		just to take advantage of the way arrays are stored in main memory */
 
+	/* Find the smaller one */
+	struct relation *smaller;
 	if(R->cols < S->cols)
-		createIndexPerBucket(R);
+		smaller = R;
 	else
-		createIndexPerBucket(S);
+		smaller = S;
 
+	initializeIndexArray(smaller);
 
 	// PHASE THREE [Finding the results]
 	// printf("******************************************************************************\n");

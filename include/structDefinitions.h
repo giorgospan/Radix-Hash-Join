@@ -41,7 +41,7 @@ struct relation
 	/* One struct index per bucket 
 		A relation has many buckets 
 		Consequently we need an array of indexes */
-	struct index *indexArray;
+	struct index **indexArray;
 };
 
 struct index

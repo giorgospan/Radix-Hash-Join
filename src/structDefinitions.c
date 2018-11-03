@@ -1,6 +1,7 @@
 #include "structDefinitions.h"
 #include "prepareInput.h"
 #include "phaseOne.h"
+#include "phaseTwo.h" /* For calling deleteIndexArray(..) */
 
 void initializeRelation(struct relation** R)
 {
@@ -28,11 +29,12 @@ void initializeRelation(struct relation** R)
 
 void deleteRelation(struct relation* R)
 {
+	deAllocateArray(R->inputRelation, R->rows);
 	free(R->demi);
 	free(R->histoGram);
 	deletepSum(R->pSum);
 	free(R->final);
-	deAllocateArray(R->inputRelation, R->rows);
+	deleteIndexArray(R->indexArray);
 	free(R);
 }
 
