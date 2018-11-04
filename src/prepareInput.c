@@ -63,8 +63,10 @@ void inputCreator()
 	{
 		for (j = 0; j < numOfColumns; ++j)
 		{
-			// uint32_t r = rand()  % 91 + 10;	// Range: 10 ~> 100
-			uint32_t r = rand()  % 90000001; 	// Range: 0 ~> 10.000.000
+			// uint32_t r = rand()  % 100;	 // Range: 0 ~> 100
+			// uint32_t r = rand()  % 10000; // Range: 0 ~> 10.000
+			uint32_t r = rand()  % 100000; // Range: 0 ~> 100.000
+			// uint32_t r = rand()  % 10000000; // Range: 0 ~> 10.000.000
 			fwrite(&r, sizeof(uint32_t), 1, fp);
 		}
 	}
@@ -146,9 +148,9 @@ uint32_t** createArrayAndInit(uint32_t *rowSize, uint32_t *colSize)
 	}
 
 	fread(&numOfTuples, sizeof(uint32_t), 1, fp);
-	// printf("Num of Tuples %u\n", numOfTuples);
+	printf("Num of Tuples %u\n", numOfTuples);
 	fread(&numOfColumns, sizeof(uint32_t), 1, fp);
-	// printf("Num of Columns %u\n", numOfColumns);
+	printf("Num of Columns %u\n", numOfColumns);
 
 	/* First we allocate the array */
 	array = allocateArray(numOfColumns, numOfTuples);

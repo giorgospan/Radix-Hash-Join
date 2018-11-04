@@ -102,9 +102,13 @@ void ListInsert(struct List* list,struct resultTuple* tuple)
 void ListPrint(struct List* list)
 {
 	struct ListNode* current = list->first;
-	if(!list->nodeCounter)printf("List is empty\n");
-	
+
 	printf("List Nodes: %u | List Tuples: %u\n",list->nodeCounter,list->tupleCounter);
+	if(!list->nodeCounter)
+		{
+			printf("List is empty\n");
+			return;
+		}
 
 	/* Print buffer of each node */
 	uint32_t i;	

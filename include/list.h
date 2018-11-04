@@ -4,8 +4,8 @@
 #include "structDefinitions.h"
 
 /* Buffer size in bytes [1 MB] */
-// #define BUFFER_SIZE 1048576
-#define BUFFER_SIZE 50
+#define BUFFER_SIZE 1048576
+// #define BUFFER_SIZE 50
 
 
 struct ListNode

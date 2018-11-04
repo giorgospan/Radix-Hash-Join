@@ -10,6 +10,7 @@
 
 int main(int argc, char const *argv[])
 {
+	///////////////////////////////////////////////////////////////////////////////////////////////
 	// srand(time(NULL));
 	// uint32_t value = 73;
 	// uint32_t size;
@@ -17,12 +18,13 @@ int main(int argc, char const *argv[])
 	// printf("\nLength of num is %d\n", sizeOfNumInBinary(value));
 	// firstHash(value, 3);
 	// printf("------------------------------------------------------------------------------\n");
+	///////////////////////////////////////////////////////////////////////////////////////////////
+
 
 	uint32_t i;	
 	struct relation *R,*S;
 	initializeRelation(&R);
 	initializeRelation(&S);
-
 
 	// PHASE ONE [Partitioning]
 	printf("******************************************************************************\n");
@@ -77,22 +79,23 @@ int main(int argc, char const *argv[])
 		small = S;
 	}
 
-	// initializeIndexArray(small);
-	// buildIndexPerBucket(small);
+	initializeIndexArray(small);
+	buildIndexPerBucket(small);
 
 	// PHASE THREE [Finding the results]
 	printf("******************************************************************************\n");
 	printf("*                              PHASE THREE                                   *\n");
 	printf("******************************************************************************\n");
 
-	// findResult(big,small);
+	/* A list to hold the result tuples */
+	// struct List *list;
+	// ListCreate(&list);
 
-
-
-
+	//  Find results 
+	// findResult(big,small,list);
+	// ListPrint(list);
 
 	/* FREE*/
-
 	/* Either OR
 		Propably the first to avoid more overhead */
 
@@ -104,6 +107,7 @@ int main(int argc, char const *argv[])
 	// free(final);			   
 	///////////////////////////
 
+	// ListDestroy(list);
 	deleteRelation(R);
 	deleteRelation(S);
 	return 0;
