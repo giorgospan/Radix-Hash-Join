@@ -20,7 +20,8 @@ int main(int argc, char const *argv[])
 	// printf("------------------------------------------------------------------------------\n");
 	///////////////////////////////////////////////////////////////////////////////////////////////
 
-
+	clock_t begin,end;
+	double duration;
 	uint32_t i;	
 	struct relation *R,*S;
 	initializeRelation(&R);
@@ -30,6 +31,7 @@ int main(int argc, char const *argv[])
 	printf("******************************************************************************\n");
 	printf("*                              PHASE ONE                                     *\n");
 	printf("******************************************************************************\n");
+	begin = clock();
 
 	////////////////////////////////////////////////
 	// uint32_t *currentColumn = selectColumn(p, 0);
@@ -56,10 +58,15 @@ int main(int argc, char const *argv[])
 	S->pSum = createPsum(S->histoGram);
 	S->final = sortArray(S->demi,S->cols,S->pSum);
 
+	end = clock();
+	duration = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("Duration: %.3f\n\n\n",duration);
+
 	// PHASE TWO [Indexing]
 	printf("******************************************************************************\n");
 	printf("*                              PHASE TWO                                     *\n");
 	printf("******************************************************************************\n");
+	begin = clock();
 
 	/* Friendly Reminder: A relation in real life has many number of rows, 
 		but we[as programmers] decide to store each row in a column 
@@ -82,32 +89,33 @@ int main(int argc, char const *argv[])
 	initializeIndexArray(small);
 	buildIndexPerBucket(small);
 
+	end = clock();
+	duration = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("Duration: %.3f\n\n\n",duration);
+
 	// PHASE THREE [Finding the results]
 	printf("******************************************************************************\n");
 	printf("*                              PHASE THREE                                   *\n");
 	printf("******************************************************************************\n");
+	begin = clock();
 
 	/* A list to hold the result tuples */
-	// struct List *list;
-	// ListCreate(&list);
+	struct List *list;
+	ListCreate(&list);
 
-	//  Find results 
-	// findResult(big,small,list);
-	// ListPrint(list);
+	/* Find results */
+	findResult(big,small,list);
 
-	/* FREE*/
-	/* Either OR
-		Propably the first to avoid more overhead */
+	end = clock();
+	duration = (double)(end - begin) / CLOCKS_PER_SEC;
+	printf("Duration: %.3f\n\n\n",duration);
 
-	///////////////////////////
-	// deAllocateStructs(demi);
-	// free(demi);			   
-	// free(histoGram);		   
-	// deletepSum(pSum);	   
-	// free(final);			   
-	///////////////////////////
+	/* Print results */
+	ListPrint(list);
 
-	// ListDestroy(list);
+
+	/* FREE */
+	ListDestroy(list);
 	deleteRelation(R);
 	deleteRelation(S);
 	return 0;
