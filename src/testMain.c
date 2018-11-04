@@ -4,37 +4,13 @@
 #include "structDefinitions.h"
 #include "phaseOne.h"
 #include "phaseTwo.h"
+#include "phaseThree.h"
 #include "list.h"
 
 
 int main(int argc, char const *argv[])
 {
-	/* Used for testing list implementation */
-	///////////////////////////////////////////////////////////////
-	// struct List* list;
-	// struct resultTuple* t = malloc(sizeof(struct resultTuple));
-	// ListCreate(&list);
-	//
-	// int i;
-	// for(i=0;i<80000;++i)
-	// {
-	//
-	// 	 Create tuple 
-	// 	t->rowId1=i;
-	// 	t->rowId2=2*i;
-	//
-	// 	/* Insert it to list */
-	// 	ListInsert(list,t);
-	// }
-	//
-	// ListPrint(list);
-	// ListDestroy(list);
-	// free(t);
-	// return 0;
-	////////////////////////////////////////////////////////////////
-
-
-	srand(time(NULL));
+	// srand(time(NULL));
 	// uint32_t value = 73;
 	// uint32_t size;
 	// printNumInBinary(value);
@@ -87,20 +63,32 @@ int main(int argc, char const *argv[])
 		but we[as programmers] decide to store each row in a column 
 		just to take advantage of the way arrays are stored in main memory */
 
-	/* Find the smaller one */
-	struct relation *smaller;
-	if(R->cols < S->cols)
-		smaller = R;
-	else
-		smaller = S;
+	/* Build index on every bucket of the smaller relation */
+	struct relation *small,*big;
 
-	initializeIndexArray(smaller);
-	buildIndexPerBucket(smaller);
+	if(R->cols < S->cols)
+	{
+		big = S;
+		small = R;
+	}
+	else
+	{
+		big = R;
+		small = S;
+	}
+
+	// initializeIndexArray(small);
+	// buildIndexPerBucket(small);
 
 	// PHASE THREE [Finding the results]
-	// printf("******************************************************************************\n");
-	// printf("*                              PHASE THREE                                   *\n");
-	// printf("******************************************************************************\n");
+	printf("******************************************************************************\n");
+	printf("*                              PHASE THREE                                   *\n");
+	printf("******************************************************************************\n");
+
+	// findResult(big,small);
+
+
+
 
 
 	/* FREE*/

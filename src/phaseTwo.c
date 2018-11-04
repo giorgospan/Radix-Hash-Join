@@ -3,8 +3,10 @@
 #include "phaseTwo.h"
 #include "phaseOne.h" /* For accessing rangeOfValues variable */
 
+#include <unistd.h> /* For debugging */
+
 /* It'll change if we change secondHash(..) */
-uint32_t rangeOfHash2=10;
+uint32_t rangeOfHash2=1024;
 
 void initializeIndexArray(struct relation* R)
 {
@@ -48,10 +50,19 @@ void initializeIndexArray(struct relation* R)
 void buildIndexPerBucket(struct relation* R)
 {
 	uint32_t i;
-	int32_t j;
-	int32_t start;
 	uint32_t bucketSize;
 	uint32_t hash;
+	int32_t j;
+	int32_t k;
+	int32_t c;
+	int32_t start;
+
+	printf("\nHistogram of small relation:\n");
+	printArray(R->histoGram, rangeOfValues);
+
+	printf("\n~~~~~~~~~SMALL~~~~~~~~~\n");
+	printf("Number of rows:%d\n",R->rows);
+	printf("Number of cols:%d\n",R->cols);
 
 	// For every bucket
 	for(i=0;i<rangeOfValues;i++)
@@ -68,26 +79,59 @@ void buildIndexPerBucket(struct relation* R)
 			// Remember: histoGram is array with ints
 			bucketSize = R->histoGram[i];
 
-			/* Scan from the bottom of the bucket till the top */
+			// printf("[%d]bucketSize:%d\n",i,bucketSize);
+
+			/* Scan from the bottom of the bucket to the top */
 			for(j=start+bucketSize-1;j>=start;j--)
 			{
 				hash = secondHash(R->final[j].value);
+				// printf("\nsecondHash(%d): %d\n",R->final[j].value,hash);
 
-				// if(R->indexArray[i]->bucketArray[hash] == 0)
-				// 	R->indexArray[i]->bucketArray[hash] =j;
-				// else
-				// 	/* Find the first zero in chainArray 
-				// 		by following the chain and
-				// 		save "j" in that place */
+				if(R->indexArray[i]->bucketArray[hash] == 0)
+				{
+					// printf("Found empty spot in bucketArray\n");
+					R->indexArray[i]->bucketArray[hash] = (j-start)+1;
+					// printf("bucketArray[%d]: %d\n",hash,  R->indexArray[i]->bucketArray[hash] );
+				}
+				else
+				{
+					/* Find the first zero in chainArray 
+						by following the chain and
+						save "j" in that place */
+					k = R->indexArray[i]->bucketArray[hash]-1;
+					// printf("Moving to chainArray[%d](now is equal to %d)\n",k,R->indexArray[i]->chainArray[k]);
+					while(1)
+					{	
+						// We've found an empty spot in chainArray 
+						if(R->indexArray[i]->chainArray[k] == 0)
+						{	
+							R->indexArray[i]->chainArray[k] = (j-start) + 1;
+							// printf("Found empty spot on chainArray[%d]\n",k);
+							break;
+						}
+						/* Step further on the chain */
+						else
+						{
+							k = R->indexArray[i]->chainArray[k] - 1;
+							// printf("Moving to chainArray[%d](now is equal to %d)\n",k,R->indexArray[i]->chainArray[k]);
+							// sleep(1);
+						}
+					}
+				}
 			}	
 		}
+		// else
+		// 	printf("Empty bucket\n");
+		// printf("==============================================\n");
 	}
 }
 
 
 uint32_t secondHash(uint32_t num)
 {
-	return num % 10;
+	// return num % 8;
+	return num & ((1<<10)-1); 
+	// return rand() %8;
 }
 
 void deleteIndexArray(struct index** indArray)

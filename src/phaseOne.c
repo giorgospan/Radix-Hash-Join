@@ -1,8 +1,8 @@
 #include "phaseOne.h"
 #include "bitWiseUtil.h"
 
-const int significantsForHash = 5;
-const int rangeOfValues = 32;
+const int significantsForHash = 3;
+const int rangeOfValues = 8;
 
 
 uint32_t *selectColumn(uint32_t **array, uint32_t columnNumber)
@@ -62,8 +62,8 @@ uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 	for (i = 0; i < columnSize; ++i)
 		countArray[data[i].hashValue] += 1;
 
-	printf("\nHistogram:\n");
-	printArray(countArray, rangeOfValues);
+	// printf("\nHistogram:\n");
+	// printArray(countArray, rangeOfValues);
 
 	return countArray;
 }
