@@ -37,7 +37,6 @@ all: clean ./$(TARGET)
 test%: test%.o $(filter-out ./main.o, ./$(OBJECTS))
 	@$(CC) $(CFLAGS) -o $@ $^ -lcunit
 	@./$@
-	@echo
 
 test%.o: $(TESTDIR)/test%.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -49,7 +48,7 @@ test%.o: $(TESTDIR)/test%.c
 .PHONY: clean
 clean:
 	@rm -f $(OBJECTS) ./$(TARGET) 
-	@rm -f input.bin
+	@rm -f input.bin results.log
 	@find ./test* -maxdepth 0 -type f -delete
 	@echo "Cleanup complete!"
 
