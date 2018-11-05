@@ -14,6 +14,8 @@
 
 static uint32_t tuplesToBeRead;
 static uint32_t colsToBeRead;
+static uint32_t** writtenArray;
+static uint32_t** createdArray;
 static FILE* fp;
 
 /**
@@ -28,9 +30,6 @@ static FILE* fp;
  */
 void testInputCreator(void)
 {
-	/* Call inputCreator()*/
-	inputCreator();
-
 	uint32_t i;
 	uint32_t j;
 	uint32_t r;
@@ -45,8 +44,23 @@ void testInputCreator(void)
 	{
 		CU_FAIL(message);
 	}
+	
+	/* Allocate space to store what we read */
+	if( (writtenArray=malloc(tuplesToBeRead * sizeof(uint32_t*))) == NULL )
+	{
+		CU_FAIL("test function could not allocate enough memory\n");
+	}
+	for (i = 0; i < tuplesToBeRead; ++i)
+	{
+
+		if( (writtenArray[i] = malloc(colsToBeRead * sizeof(uint32_t))) == NULL )
+		{
+			CU_FAIL("test function could not allocate enough memory\n");
+		}
+	}
 
 
+	/* Store each element we read in writtenArray */
 	for (i = 0; i < tuplesToBeRead; ++i)
 	{
 		for (j = 0; j < colsToBeRead; ++j)
@@ -55,6 +69,7 @@ void testInputCreator(void)
 			{
 				CU_FAIL(message);
 			}
+			writtenArray[i][j] = r;
 		}
 	}
 }
@@ -77,8 +92,8 @@ void testInputReader(void)
  *
  * After testInputCreator succeded,
  * we call createArrayAndInit() to check
- * whether it reads the rows and cols 
- * that inpuCreator wrote in the file.
+ * whether it reads what inputCreator() 
+ * exactly wrote in the file
  *
  * Reminder: tuples and columns will be reversed
  * 
@@ -86,16 +101,32 @@ void testInputReader(void)
 
 void testCreateArrayAndInit(void)
 {
-	uint32_t t;
 	uint32_t c;
-	createArrayAndInit(&t,&c);
+	uint32_t t;
+	uint32_t i;
+	uint32_t j;
+	
+	createdArray = createArrayAndInit(&t,&c);
+
+	/* First make sure it reads the right #rows & #cols*/
 	CU_ASSERT_EQUAL(t,colsToBeRead);
 	CU_ASSERT_EQUAL(c,tuplesToBeRead);
+
+	/* Then make sure it reads the right numbers [i.e: the numbers written on the file] */
+	for (i = 0; i < tuplesToBeRead; ++i)
+	{
+		for (j = 0; j < colsToBeRead; ++j)
+		{
+			CU_ASSERT_EQUAL(createdArray[j][i],writtenArray[i][j]);
+		}
+	}
 }
 
 
 int init_suite(void)
 {
+	/* Call inputCreator()*/
+	inputCreator();
 	if((fp = fopen("input.bin", "rb")) == NULL)
 	{
 		return -1;
@@ -108,6 +139,7 @@ int init_suite(void)
 
 int cleanup_suite(void)
 {
+
 	if(fclose(fp) != 0)
 	{
 		return -1;
@@ -115,8 +147,17 @@ int cleanup_suite(void)
 	else
 	{
 		fp = NULL;
-		return 0;
 	}
+
+	uint32_t i,j;
+	
+	for (i = 0; i < tuplesToBeRead; i++)
+		free(writtenArray[i]);
+
+	free(writtenArray);
+	deAllocateArray(createdArray,colsToBeRead);
+	return 0;
+
 }
 
 
