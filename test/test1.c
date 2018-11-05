@@ -28,6 +28,7 @@ static FILE* fp;
  * per fread() call.
  * 
  */
+
 void testInputCreator(void)
 {
 	uint32_t i;

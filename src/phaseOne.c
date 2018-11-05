@@ -47,7 +47,6 @@ struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize)
 
 uint32_t* createHistogram(struct PlaceHolder* data, uint32_t columnSize)
 {
-	// printf("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
 	uint32_t i;
 	uint32_t *countArray  = malloc(rangeOfValues * sizeof(uint32_t));
 

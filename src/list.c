@@ -103,29 +103,34 @@ void ListPrint(struct List* list)
 {
 	struct ListNode* current = list->first;
 
-	printf("List Nodes: %u | List Tuples: %u\n[Buffer size: %.2f KB]\n",list->nodeCounter,list->tupleCounter,BUFFER_SIZE/1000.0);
-	// if(!list->nodeCounter)
-	// 	{
-	// 		printf("List is empty\n");
-	// 		return;
-	// 	}
+	// Replace fp with stdout in case you want to print output on command line 
 
-	// /* Print buffer of each node */
-	// uint32_t i;	
-	// while(current)
-	// {
-	// 	/* Buffer in the last node might not be full */
-	// 	/* Thus, we iterate until the first empty[i.e: available] space */
-	// 	if(current==list->last)
-	// 		for(i=0;i<available;i++)
-	// 			printf("(%u,%u)\n",current->buffer[i].rowId1,current->buffer[i].rowId2);
-	// 	else
-	// 		for(i=0;i<bufferEntries;i++)
-	// 			printf("(%u,%u)\n",current->buffer[i].rowId1,current->buffer[i].rowId2);
+	FILE* fp = fopen("results.log","w");
 
-	// 	printf("=======================================================\n");
-	// 	current=current->next;
-	// }
+	fprintf(fp,"List Nodes: %u | List Tuples: %u\n[Buffer size: %.2f KB]\n",list->nodeCounter,list->tupleCounter,BUFFER_SIZE/1000.0);
+	if(!list->nodeCounter)
+	{
+		fprintf(fp,"List is empty\n");
+		return;
+	}
+
+	/* Print buffer of each node */
+	uint32_t i;	
+	while(current)
+	{
+		/* Buffer in the last node might not be full */
+		/* Thus, we iterate until the first empty[i.e: available] space */
+		if(current==list->last)
+			for(i=0;i<available;i++)
+				fprintf(fp,"(%u,%u)\n",current->buffer[i].rowId1,current->buffer[i].rowId2);
+		else
+			for(i=0;i<bufferEntries;i++)
+				fprintf(fp,"(%u,%u)\n",current->buffer[i].rowId1,current->buffer[i].rowId2);
+
+		fprintf(fp,"=======================================================\n");
+		current=current->next;
+	}
+	fclose(fp);
 }
 
 

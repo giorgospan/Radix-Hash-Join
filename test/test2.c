@@ -20,8 +20,6 @@ static uint32_t testColumn1[] = {0,1,2,3,4,5,6,7,8,9};
 static uint32_t testColumn2[] = {0,0,0,0,0,0,0,0,0,0};
 static uint32_t testColumn3[] = {178,178,178,178,178,178,178,178,178,178};
 
-/* Caution!!!! testColumn4 depends on rangeOfValues */
-static uint32_t testColumn4[] = {1,1,1,1,1,1,1,1};
 static uint32_t size = 10;
 
 
@@ -103,8 +101,12 @@ void testCreateHistogram2(void)
 void testCreatePsum(void)
 {
 
-	uint32_t** ret = createPsum(testColumn4);
 	uint32_t i;
+	uint32_t* dummy = malloc(sizeof(uint32_t)*rangeOfValues);
+	for(i=0;i<rangeOfValues;++i)
+		dummy[i] = 1;
+
+	uint32_t** ret = createPsum(dummy);
 	for (i = 0; i < rangeOfValues; i++)
 	{
 		CU_ASSERT_EQUAL(*ret[i],i);
@@ -114,6 +116,7 @@ void testCreatePsum(void)
 		if (ret[i] != NULL)
 			free(ret[i]);
 	}
+	free(dummy);
 	free(ret);
 }
 

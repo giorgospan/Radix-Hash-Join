@@ -13,9 +13,10 @@ void initializeIndexArray(struct relation* R)
 	uint32_t i,j;
 	uint32_t bucketSize;
 
-	/* Firstly, we need to allocate space for indexArray */	
+	/* Firstly, we need to allocate space for indexArray */
 	/* Remember: One struct index per bucket */
 	R->indexArray = malloc(rangeOfValues*sizeof(struct index*));
+
 
 	// For every bucket
 	for(i=0;i<rangeOfValues;i++)
@@ -94,14 +95,14 @@ void buildIndexPerBucket(struct relation* R)
 				}
 				else
 				{
-					/* Find the first zero in chainArray 
+					/* Find the first zero in chainArray
 						by following the chain and
 						store "(j-start) + 1" in that place */
 
 					chainPos = R->indexArray[i]->bucketArray[hash]-1;
 					traverseTheChain(chainPos, R->indexArray[i]->chainArray, j-start + 1);
 				}
-			}	
+			}
 		}
 		// else
 		// 	printf("Empty bucket\n");
@@ -113,10 +114,10 @@ void traverseTheChain(uint32_t chainPos,uint32_t* chainArray,uint32_t posToBeSto
 {
 	// printf("Moving to chainArray[%d](now is equal to %d)\n",chainPos,chainArray[chainPos]);
 	while(1)
-	{	
-		// We've found an empty spot in chainArray 
+	{
+		// We've found an empty spot in chainArray
 		if(chainArray[chainPos] == 0)
-		{	
+		{
 			chainArray[chainPos] = posToBeStored;
 			// printf("Found empty spot on chainArray[%d]\n",chainPos);
 			break;
@@ -139,10 +140,10 @@ uint32_t secondHash(uint32_t num)
 	// return num % 8;
 
 	/* Second option */
-	/* The same thing we did in firstHash 
+	/* The same thing we did in firstHash
 		but with more significants this time */
 	uint32_t significants = 10;
-	return num & ((1<<significants)-1); 
+	return num & ((1<<significants)-1);
 }
 
 void deleteIndexArray(struct index** indArray)
@@ -156,7 +157,7 @@ void deleteIndexArray(struct index** indArray)
 	/* For every bucket of the relation */
 	for(i=0;i<rangeOfValues;i++)
 	{
-		/* If this bucket has an index */  
+		/* If this bucket has an index */
 		if(indArray[i] != NULL)
 		{
 			/* Free index fields */

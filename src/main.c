@@ -22,7 +22,7 @@ int main(int argc, char const *argv[])
 
 	clock_t begin,end;
 	double duration;
-	uint32_t i;	
+	uint32_t i;
 	struct relation *R,*S;
 	initializeRelation(&R);
 	initializeRelation(&S);
@@ -35,17 +35,17 @@ int main(int argc, char const *argv[])
 
 	////////////////////////////////////////////////
 	// uint32_t *currentColumn = selectColumn(p, 0);
-	// columnPrint(currentColumn, cols);			
-	// for (i = 0; i < cols; i++)					
-	// 	printf("%u\n", currentColumn[i]);			
+	// columnPrint(currentColumn, cols);
+	// for (i = 0; i < cols; i++)
+	// 	printf("%u\n", currentColumn[i]);
 	////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////////////////////////////
-	// uint32_t sizeOfHistogram;											 
+	// uint32_t sizeOfHistogram;
 	// struct PlaceHolder *demi = convertToStructs(selectColumn(p, 0), cols);
-	// uint32_t* histoGram = createHistogram(demi, cols);					 
-	// uint32_t** pSum = createPsum(histoGram);								 
-	// struct PlaceHolder *final =  sortArray(demi, cols, pSum);			 
+	// uint32_t* histoGram = createHistogram(demi, cols);
+	// uint32_t** pSum = createPsum(histoGram);
+	// struct PlaceHolder *final =  sortArray(demi, cols, pSum);
 	/////////////////////////////////////////////////////////////////////////
 
 	R->demi = convertToStructs(selectColumn(R->inputRelation, R->joinCol), R->cols);
@@ -68,8 +68,8 @@ int main(int argc, char const *argv[])
 	printf("******************************************************************************\n");
 	begin = clock();
 
-	/* Friendly Reminder: A relation in real life has many number of rows, 
-		but we[as programmers] decide to store each row in a column 
+	/* Friendly Reminder: A relation in real life has many number of rows,
+		but we[as programmers] decide to store each row in a column
 		just to take advantage of the way arrays are stored in main memory */
 
 	/* Build index on every bucket of the smaller relation */
@@ -110,7 +110,7 @@ int main(int argc, char const *argv[])
 	duration = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("Duration: %.3f\n\n\n",duration);
 
-	/* Print results */
+	/* Print results to file "results.log" */
 	ListPrint(list);
 
 
