@@ -10,16 +10,7 @@
 
 int main(int argc, char const *argv[])
 {
-	///////////////////////////////////////////////////////////////////////////////////////////////
-	// srand(time(NULL));
-	// uint32_t value = 73;
-	// uint32_t size;
-	// printNumInBinary(value);
-	// printf("\nLength of num is %d\n", sizeOfNumInBinary(value));
-	// firstHash(value, 3);
-	// printf("------------------------------------------------------------------------------\n");
-	///////////////////////////////////////////////////////////////////////////////////////////////
-
+	
 	clock_t begin,end;
 	double duration;
 	uint32_t i;

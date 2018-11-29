@@ -1,0 +1,8 @@
+# ignore all .o files
+*.o
+
+# ignore all files inside build directory
+build/
+
+# ignore all files[signle asterisk] in every subdir at any depth[two asterisks] of workloads dir
+workloads/**/*
