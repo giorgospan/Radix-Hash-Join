@@ -1,8 +1,8 @@
 #include "phaseOne.h"
 #include "bitWiseUtil.h"
 
-const int significantsForHash = 3;
-const int rangeOfValues = 8;
+const int significantsForHash = 8;
+const int rangeOfValues = 256;
 
 
 uint32_t *selectColumn(uint32_t **array, uint32_t columnNumber)

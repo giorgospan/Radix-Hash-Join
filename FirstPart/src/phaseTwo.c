@@ -6,7 +6,7 @@
 #include <unistd.h> /* For debugging sleep(..) */
 
 /* It'll change if we make a change in secondHash(..) */
-uint32_t rangeOfHash2=1024;
+uint32_t rangeOfHash2=331;
 
 void initializeIndexArray(struct relation* R)
 {
@@ -100,7 +100,7 @@ void buildIndexPerBucket(struct relation* R)
 						store "(j-start) + 1" in that place */
 
 					chainPos = R->indexArray[i]->bucketArray[hash]-1;
-					traverseTheChain(chainPos, R->indexArray[i]->chainArray, j-start + 1);
+					traverseChain(chainPos, R->indexArray[i]->chainArray, j-start + 1);
 				}
 			}
 		}
@@ -110,7 +110,7 @@ void buildIndexPerBucket(struct relation* R)
 	}
 }
 
-void traverseTheChain(uint32_t chainPos,uint32_t* chainArray,uint32_t posToBeStored)
+void traverseChain(uint32_t chainPos,uint32_t* chainArray,uint32_t posToBeStored)
 {
 	// printf("Moving to chainArray[%d](now is equal to %d)\n",chainPos,chainArray[chainPos]);
 	while(1)
@@ -135,15 +135,9 @@ void traverseTheChain(uint32_t chainPos,uint32_t* chainArray,uint32_t posToBeSto
 
 uint32_t secondHash(uint32_t num)
 {
-	/* First option */
-	/* Typical hash fucntion with range of values = 8 */
-	// return num % 8;
+	/* Typical hash fucntion with range of values being a prime number */
+	return num % 331;
 
-	/* Second option */
-	/* The same thing we did in firstHash
-		but with more significants this time */
-	uint32_t significants = 10;
-	return num & ((1<<significants)-1);
 }
 
 void deleteIndexArray(struct index** indArray)

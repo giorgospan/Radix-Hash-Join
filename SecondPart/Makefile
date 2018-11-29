@@ -1,34 +1,45 @@
 # specify directories
-INCDIR := ./include
-SRCDIR := ./src
-TESTDIR:= ./test
+INCDIR  := ./include
+SRCDIR  := ./src
+TESTDIR := ./test
+BUILDDIR:= ./build
 
-# name of executable
-TARGET := myprog
+# name of our executable
+TARGET  := Driver
 
-# specify source,object,header files [+ test source files]
+# specify source,object,header files & test source files
 SOURCES := $(wildcard $(SRCDIR)/*.c)
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=./%.o)
-INCLUDES := $(wildcard $(INCDIR)/*.h)
-TESTS := $(wildcard $(TESTDIR)/*.c)
+INCLUDES:= $(wildcard $(INCDIR)/*.h)
+TESTS   := $(wildcard $(TESTDIR)/*.c)
 
-CC := gcc
-CFLAGS := -g -I $(INCDIR)  # -g enables debugging
+CC      := gcc
+CFLAGS  := -g -I $(INCDIR)  # -g enables debugging
 
 #############################################################
-
 # run the program
-all: clean ./$(TARGET)
-	# valgrind ./$(TARGET)
-	./$(TARGET)
+all: clean $(BUILDDIR)/$(TARGET)
+	# valgrind $(BUILDDIR)/$(TARGET)
+	$(BUILDDIR)/$(TARGET)
 
 # create executable [by linking object files]
-./$(TARGET): ./$(OBJECTS)
+$(BUILDDIR)/$(TARGET): ./$(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ ./$(OBJECTS) 
 
 # create object files
-./$(OBJECTS): ./%.o : $(SRCDIR)/%.c
+./$(OBJECTS): ./%.o : $(SRCDIR)/%.c 
 	$(CC) $(CFLAGS) -c $< -o $@
+
+#############################################################
+
+# create harness executable
+$(BUILDDIR)/harness: ./harness.o
+	g++ -g -o $@ $^
+
+# create harness object file
+./harness.o: $(SRCDIR)/harness.cpp
+	g++ -g -c $< -o $@
+
 
 #############################################################
 
@@ -47,7 +58,8 @@ test%.o: $(TESTDIR)/test%.c
 # clean up
 .PHONY: clean
 clean:
-	@rm -f $(OBJECTS) ./$(TARGET) 
+	@rm -f  harness.o $(OBJECTS) $(BUILDDIR)/*
+	# @rm -f $(OBJECTS) ./$(TARGET) ./harness.o ./harness
 	@rm -f input.bin results.log
 	@find ./test* -maxdepth 0 -type f -delete
 	@echo "Cleanup complete!"
@@ -55,4 +67,4 @@ clean:
 # count 
 .PHONY: count
 count:
-	wc $(SOURCES) $(INCLUDES) $(TESTS)
+	@wc $(SOURCES) $(INCLUDES) $(TESTS)
