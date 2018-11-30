@@ -48,7 +48,7 @@ void inputCreator()
 	uint32_t j;
 
 	// uint32_t numOfTuples = rand()  % 9000001 + 1000000;	// Range: 1.000.000 ~> 10.000.000
-	uint32_t numOfTuples = 1000000;
+	uint32_t numOfTuples = 50000;
 	uint32_t numOfColumns = rand() % 4 + 2; // Range: 2 ~> 5
 
 	if((fp = fopen("input.bin", "wb")) == NULL)
@@ -64,8 +64,8 @@ void inputCreator()
 		for (j = 0; j < numOfColumns; ++j)
 		{
 			// uint32_t r = rand()  % 100;	 // Range: 0 ~> 100
-			uint32_t r = rand()  % 10000; // Range: 0 ~> 10.000
-			// uint32_t r = rand()  % 100000; // Range: 0 ~> 100.000
+			// uint32_t r = rand()  % 10000; // Range: 0 ~> 10.000
+			uint32_t r = rand()  % 100000; // Range: 0 ~> 100.000
 			// uint32_t r = rand()  % 10000000; // Range: 0 ~> 10.000.000
 			fwrite(&r, sizeof(uint32_t), 1, fp);
 		}

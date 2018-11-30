@@ -1,7 +1,7 @@
 #include "structDefinitions.h"
 #include "prepareInput.h"
-#include "phaseOne.h"
-#include "phaseTwo.h" /* For calling deleteIndexArray(..) */
+#include "partition.h"
+#include "build.h" /* For calling deleteIndexArray(..) */
 
 void initializeRelation(struct relation** R)
 {

@@ -6,7 +6,7 @@ uint32_t firstHash(uint32_t num, uint32_t significants)
 	uint32_t hashValue;
 
 	/**
-	 * Calculate the hashValue by shifting back n forth
+	 * Calculate the hashValue by shifting back n' forth
 	 */
 	// hashValue = num;
 	// hashValue <<= 32 - significants;

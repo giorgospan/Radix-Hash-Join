@@ -1,12 +1,12 @@
 #include "usefulHeaders.h"
 #include "structDefinitions.h"
-#include "phaseTwo.h"
-#include "phaseOne.h" /* For accessing rangeOfValues variable */
+#include "build.h"
+#include "partition.h" /* For accessing rangeOfValues variable */
 
 #include <unistd.h> /* For debugging sleep(..) */
 
 /* It'll change if we make a change in secondHash(..) */
-uint32_t rangeOfHash2=331;
+uint32_t rangeOfHash2=101;
 
 void initializeIndexArray(struct relation* R)
 {
@@ -136,7 +136,7 @@ void traverseChain(uint32_t chainPos,uint32_t* chainArray,uint32_t posToBeStored
 uint32_t secondHash(uint32_t num)
 {
 	/* Typical hash fucntion with range of values being a prime number */
-	return num % 331;
+	return num % 101;
 
 }
 

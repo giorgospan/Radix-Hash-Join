@@ -4,6 +4,9 @@ SRCDIR  := ./src
 TESTDIR := ./test
 BUILDDIR:= ./build
 
+# workload path
+WORKPATH:= ./workloads/small/small.init
+
 # name of our executable
 TARGET  := Driver
 
@@ -19,8 +22,8 @@ CFLAGS  := -g -I $(INCDIR)  # -g enables debugging
 #############################################################
 # run the program
 all: clean $(BUILDDIR)/$(TARGET)
-	# valgrind $(BUILDDIR)/$(TARGET)
-	$(BUILDDIR)/$(TARGET)
+	# valgrind $(BUILDDIR)/$(TARGET) < $(WORKPATH)
+	$(BUILDDIR)/$(TARGET) < $(WORKPATH)
 
 # create executable [by linking object files]
 $(BUILDDIR)/$(TARGET): ./$(OBJECTS)
@@ -59,9 +62,7 @@ test%.o: $(TESTDIR)/test%.c
 .PHONY: clean
 clean:
 	@rm -f  harness.o $(OBJECTS) $(BUILDDIR)/*
-	# @rm -f $(OBJECTS) ./$(TARGET) ./harness.o ./harness
-	@rm -f input.bin results.log
-	@find ./test* -maxdepth 0 -type f -delete
+	# @find ./test* -maxdepth 0 -type f -delete 
 	@echo "Cleanup complete!"
 
 # count 

@@ -1,13 +1,13 @@
 #include "usefulHeaders.h"
 #include "structDefinitions.h"
 #include "bitWiseUtil.h"
-#include "phaseOne.h"
-#include "phaseTwo.h"
-#include "phaseThree.h"
+#include "partition.h"
+#include "build.h"
+#include "probe.h"
 #include "list.h"
 
 
-void findResult(struct relation* big,struct relation* small,struct List *list)
+void probe(struct relation* big,struct relation* small,struct List *list)
 {
 
 	uint32_t i;
@@ -26,7 +26,7 @@ void findResult(struct relation* big,struct relation* small,struct List *list)
 
 		/* Find out in which bucket of the small relation
 			we should search */
-		searchBucket = firstHash(searchValue,significantsForHash);
+		searchBucket = firstHash(searchValue,radixBits);
 
 		/* Bucket is empty, there is nothing to search here */
 		if(small->pSum[searchBucket] == NULL)

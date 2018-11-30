@@ -2,9 +2,9 @@
 #include "bitWiseUtil.h"
 #include "prepareInput.h"
 #include "structDefinitions.h"
-#include "phaseOne.h"
-#include "phaseTwo.h"
-#include "phaseThree.h"
+#include "partition.h"
+#include "build.h"
+#include "probe.h"
 #include "list.h"
 
 
@@ -53,7 +53,7 @@ int main(int argc, char const *argv[])
 	duration = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("Duration: %.3f\n\n\n",duration);
 
-	// PHASE TWO [Indexing]
+	// PHASE TWO [Build]
 	printf("******************************************************************************\n");
 	printf("*                              PHASE TWO                                     *\n");
 	printf("******************************************************************************\n");
@@ -84,7 +84,7 @@ int main(int argc, char const *argv[])
 	duration = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("Duration: %.3f\n\n\n",duration);
 
-	// PHASE THREE [Finding the results]
+	// PHASE THREE [Probe]
 	printf("******************************************************************************\n");
 	printf("*                              PHASE THREE                                   *\n");
 	printf("******************************************************************************\n");
@@ -95,7 +95,7 @@ int main(int argc, char const *argv[])
 	ListCreate(&list);
 
 	/* Find results */
-	findResult(big,small,list);
+	probe(big,small,list);
 
 	end = clock();
 	duration = (double)(end - begin) / CLOCKS_PER_SEC;

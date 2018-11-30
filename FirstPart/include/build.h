@@ -1,5 +1,5 @@
-#ifndef H_PHASETWO
-#define H_PHASETWO
+#ifndef BUILD_H
+#define BUILD_H
 
 /* Initializes indexArray's entries of 
 	the given relation */

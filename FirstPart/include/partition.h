@@ -1,13 +1,13 @@
-#ifndef H_PHASEONE
-#define H_PHASEONE
+#ifndef PARTITION_H
+#define PARTITION_H
 
 #include "usefulHeaders.h"
 #include "structDefinitions.h"
 
-// L1 data cache size in bytes [might be useful for selecting the best significantsForHash]
+// L1 data cache size in bytes [might be useful for selecting the best radixBits]
 #define CACHE_SIZE 65536 
 
-extern const int significantsForHash;
+extern const int radixBits;
 extern const int rangeOfValues;
 
 /* Select the appropriate column */

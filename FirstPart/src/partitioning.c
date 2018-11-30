@@ -1,7 +1,7 @@
-#include "phaseOne.h"
+#include "partition.h"
 #include "bitWiseUtil.h"
 
-const int significantsForHash = 8;
+const int radixBits = 8;
 const int rangeOfValues = 256;
 
 
@@ -36,7 +36,7 @@ struct PlaceHolder* convertToStructs(uint32_t *column, uint32_t columnSize)
 	for (i = 0; i < columnSize; i++)
 	{
 		arr[i].value = column[i];
-		arr[i].hashValue = firstHash(column[i], significantsForHash);
+		arr[i].hashValue = firstHash(column[i], radixBits);
 		arr[i].rowId = i;
 		// printf("%u\n", column[i]);
 	}

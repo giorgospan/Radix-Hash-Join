@@ -1,11 +1,11 @@
-#ifndef H_PHASETHREE
-#define H_PHASETHREE
+#ifndef PROBE_H
+#define PROBE_H
 
 #include "list.h"
 
 
 /* Finds the results and inserts them into the given list */
-void findResult(struct relation* big,struct relation* small,struct List* list);
+void probe(struct relation* big,struct relation* small,struct List* list);
 
 
 /* Checks for equality between searchValue and the value stored

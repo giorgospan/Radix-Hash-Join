@@ -1,6 +1,8 @@
 # ignore all .o files
 *.o
 
+# ignore all .log files [result file]
+*.log
 
 # ignore all .out files
 *.out
