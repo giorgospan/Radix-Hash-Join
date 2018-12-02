@@ -7,22 +7,16 @@ typedef enum Comparison { Less='<', Greater='>', Equal='=' } Comparison;
 
 struct SelectInfo
 {
-	uint64_t relId;
-	uint64_t colId;
+	unsigned relId;
+	unsigned colId;
 };
-
-void createSelectInfo(struct SelectInfo **sInfo,uint64_t relId,uint64_t colId);
-
 
 struct FilterInfo
 {
-	struct SelectInfo filterColumn;
+	struct SelectInfo filterLhs;
 	enum Comparison comparison;
 	uint64_t constant;
 };
-
-void createFilterInfo(struct SelectInfo **fInfo,struct SelectInfo sInfo,Comparison cmp,uint64_t constant);
-
 
 struct PredicateInfo
 {
@@ -30,44 +24,60 @@ struct PredicateInfo
 	struct SelectInfo right;
 };
 
-void createPredicateInfo(struct SelectInfo **pInfo,struct SelectInfo left,struct SelectInfo right);
-
 struct QueryInfo
 {
-	uint64_t *relationIds;
+	unsigned *relationIds;
 	struct PredicateInfo *predicates;
 	struct FilterInfo *filters;
 	struct SelectInfo *selections;
+	unsigned numOfRelationIds;
+	unsigned numOfPredicates;
+	unsigned numOfFilters;
+	unsigned numOfSelections;
 };
 
 /**
- * @brief  Creates a new query structure and initialize 
- *         its fields to NULL. Subsequently, parseQuery(..) is called.
+ * @brief      Creates a new query structure.
+ *             Subsequently, parseQuery(..) is called.
  */
 void createQueryInfo(struct QueryInfo **qInfo,char *rawQuery);
 
+/**
+ * @brief      Deallocates any space allocated for qInfo members
+ */
+void destroyQueryInfo(struct QueryInfo *qInfo);
 
 /**
  * @brief      Parses relation ids <r1> <r2> ...
  */
-void parseRelationIds(char *rawRelations);
-
+void parseRelationIds(struct QueryInfo *qInfo,char *rawRelations);
 
 /**
  * @brief      Parses predicates r1.a=r2.b&r1.b=r3.c...
  */
-void parsePredicates(char *rawPredicates);
-
+void parsePredicates(struct QueryInfo *qInfo,char *rawPredicates);
 
 /**
  * @brief      Parses selections r1.a r1.b r3.c...
  */
-void parseSelections(char *rawSelections);
-
+void parseSelections(struct QueryInfo *qInfo,char *rawSelections);
 
 /**
  * @brief      Parses selections [RELATIONS]|[PREDICATES]|[SELECTS]
  */
-void parseQuery(char *rawQuery);
+void parseQuery(struct QueryInfo *qInfo,char *rawQuery);
+
+/**
+ * @brief      Determines if predicate is filter
+ *
+ * @param      predicate  The predicate 
+ *
+ * @return     True if filter, False otherwise.
+ */
+int isFilter(char *predicate);
+
+void addFilter(struct FilterInfo *fInfo,char *token);
+
+void addPredicate(struct PredicateInfo *pInfo,char *token);
 
 #endif

@@ -5,69 +5,67 @@
 
 #include "Joiner.h"
 #include "Relation.h"
-
+#include "Utils.h"
 
 void createJoiner(struct Joiner** joiner)
 {
-	if( (*joiner = malloc(sizeof(struct Joiner))) == NULL )
-	{
-		perror("malloc failed[createJoiner]");
-		exit(EXIT_FAILURE);
-	}
-	(*joiner)->capacity       = 15;
+
+	*joiner = allocate(sizeof(struct Joiner),"createJoiner");
 	(*joiner)->numOfRelations = 0;
 	(*joiner)->relations      = NULL;
 }
 
 void setup(struct Joiner* joiner)
 {
-	/**
-	 * At first, we allocate enough space for 15 relations.
-	 * In case of more relations, we'll use realloc().
-	 */
-	if( (joiner->relations = malloc(15*sizeof(struct Relation*))) == NULL )
-	{
-		perror("malloc failed[setup]");
-		exit(EXIT_FAILURE);
-	}
-
-	/* We assume that file name will be at most 20 characters long */
+	/* Contains all file names : "r0\nr1\nr2\n....r20\n" */
+	char *buffer   = allocate(BUFFERSIZE*sizeof(char),"setup(..)-buffer");
+	char *allNames = buffer;
+	
+	/* We assume that file name will be at most 18[do not forget '\n' and '\0'] characters long */
 	char fileName[20];
+	
+	/* Get number of relations and store file names to allNames */
+	allNames[0] = '\0';
 	while (fgets(fileName, sizeof(fileName), stdin) != NULL)
 	{
 		if(!strcmp(fileName,"Done\n"))
 			break;
-		fileName[strcspn(fileName, "\n")] = 0;
-		addRelation(joiner,fileName);
+		++joiner->numOfRelations;
+		strcat(allNames,fileName);		
 	}
+
+	/* Allocate space to store relations */
+	joiner->relations = allocate(joiner->numOfRelations*sizeof(struct Relation*),"setup");
+
+	/* Add realation corresponding to the fileName scanned from allNames */
+	int offset;
+	while(sscanf(allNames,"%s%n",fileName,&offset)>0)
+	{
+		addRelation(joiner,fileName);
+		allNames+=offset;
+	}
+	free(buffer);
 }
 
 void addRelation(struct Joiner* joiner,char *fileName)
 {	
-	uint64_t currentSize = joiner->numOfRelations;
-	struct Relation **currentPtr = joiner->relations;
 
-	/* Allocate space for twice more relations */
-	if(currentSize == joiner->capacity)
-	{
-		uint64_t newSize = currentSize*2;
-		if(  (joiner->relations = realloc(currentPtr,(newSize)*sizeof(struct Relation*))) == NULL )
-		{
-			perror("realloc failed[addRelation]");
-			exit(EXIT_FAILURE);
-		}
-		joiner->capacity = newSize;		
-	}
+	/* Indicates the number of relations added so far */
+	static unsigned i=0;
 
 	/* Create a new relation */
 	struct Relation *rel;
-	createRelation(&rel,fileName); 
+	createRelation(&rel,fileName);
 
-	/* Add it to joiner's array with relations */
-	joiner->relations[joiner->numOfRelations++] = rel;
-	printf("Successful creation of a new relation using file \"%s\"\n",fileName);
+	/* Add it to joiner's "relations" array */
+	joiner->relations[i++] = rel;
+	// dumpRelation(rel,fileName);
 }
 
+void join(struct Joiner *joiner,struct QueryInfo *q)
+{
+
+}
 
 void destroyJoiner(struct Joiner* joiner)
 {
@@ -77,3 +75,4 @@ void destroyJoiner(struct Joiner* joiner)
 	free(joiner->relations);
 	free(joiner);
 }
+

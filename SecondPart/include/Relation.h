@@ -8,8 +8,8 @@
 
 struct Relation
 {
-	uint64_t numOfTuples;
-	uint64_t numOfCols;
+	unsigned numOfTuples;
+	unsigned numOfCols;
 	uint64_t **columns;
 };
 
@@ -29,6 +29,11 @@ void loadRelation(struct Relation *rel,char *fileName);
  * @brief      Typical printing function
  */
 void printRelation(struct Relation *rel);
+
+/**
+ * @brief      Dumps relation to the given file
+ */
+void dumpRelation(struct Relation *rel,char *fileName);
 
 /**
  * @brief    	Free-s any allocated space  

@@ -4,8 +4,8 @@ SRCDIR  := ./src
 TESTDIR := ./test
 BUILDDIR:= ./build
 
-# workload path
-WORKPATH:= ./workloads/small/small.init
+# path to our custom test file
+WORKPATH:= ./workloads/small/custom_input_file
 
 # name of our executable
 TARGET  := Driver
@@ -22,8 +22,10 @@ CFLAGS  := -g -I $(INCDIR)  # -g enables debugging
 #############################################################
 # run the program
 all: clean $(BUILDDIR)/$(TARGET)
-	# valgrind $(BUILDDIR)/$(TARGET) < $(WORKPATH)
 	$(BUILDDIR)/$(TARGET) < $(WORKPATH)
+
+valgrind: clean $(BUILDDIR)/$(TARGET)
+	valgrind $(BUILDDIR)/$(TARGET) < $(WORKPATH)
 
 # create executable [by linking object files]
 $(BUILDDIR)/$(TARGET): ./$(OBJECTS)
@@ -61,7 +63,7 @@ test%.o: $(TESTDIR)/test%.c
 # clean up
 .PHONY: clean
 clean:
-	@rm -f  harness.o $(OBJECTS) $(BUILDDIR)/*
+	@rm -f  harness.o $(OBJECTS) $(BUILDDIR)/* ./dumpFiles/*
 	# @find ./test* -maxdepth 0 -type f -delete 
 	@echo "Cleanup complete!"
 

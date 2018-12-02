@@ -10,15 +10,12 @@
 #include <sys/mman.h>
 
 #include "Relation.h"
+#include "Utils.h"
 
 
 void createRelation(struct Relation **rel,char *fileName)
 {
-	if( (*rel = malloc(sizeof(struct Relation))) == NULL )
-	{
-		perror("malloc failed[createRelation]");
-		exit(EXIT_FAILURE);
-	}
+	*rel = allocate(sizeof(struct Relation),"createRelation");
 	(*rel)->columns = NULL;
 	loadRelation(*rel,fileName);
 }
@@ -28,7 +25,8 @@ void loadRelation(struct Relation *rel,char *fileName)
 	int fd;
 
 	/* Construct the correct path to file */
-	char *filepath = malloc(sizeof(char)*(strlen(FILEPATH)+strlen(fileName)+1));
+	char *filepath = allocate(sizeof(char)*(strlen(FILEPATH)+strlen(fileName)+1),"loadRelation-filepath");
+
 	strcpy(filepath,FILEPATH);
 	strcat(filepath,fileName);
 
@@ -46,7 +44,7 @@ void loadRelation(struct Relation *rel,char *fileName)
 		exit(EXIT_FAILURE);
 	}
 
-	uint64_t fileSize = sb.st_size;
+	unsigned fileSize = sb.st_size;
 	if (fileSize<16){
 		fprintf(stderr,"Relation file \"%s\" does not contain a valid header",fileName);
 		exit(EXIT_FAILURE);
@@ -62,15 +60,11 @@ void loadRelation(struct Relation *rel,char *fileName)
 
 	/* Fetch numOfTuples & numOfCols */
 	rel->numOfTuples = *((uint64_t*) addr);
-	addr+=sizeof(rel->numOfTuples);
+	addr+=sizeof((uint64_t)rel->numOfTuples);
 	rel->numOfCols = *((uint64_t*) addr);
-	addr+=sizeof(rel->numOfCols);
+	addr+=sizeof((uint64_t)rel->numOfCols);
 
-	if( (rel->columns = malloc(rel->numOfCols*sizeof(uint64_t*))) == NULL )
-	{
-		perror("malloc failed[loadRelation]");
-		exit(EXIT_FAILURE);
-	}
+	rel->columns = allocate(rel->numOfCols*sizeof(uint64_t*),"loadRelation-columns array");
 
 	/* Map every relation's column to rel->columns array */
 	for (unsigned i=0;i<rel->numOfCols;++i) 
@@ -83,14 +77,27 @@ void loadRelation(struct Relation *rel,char *fileName)
 	close(fd);
 }
 
-void destroyRelation(struct Relation *rel)
+void dumpRelation(struct Relation *rel,char *fileName)
 {
+	/* Create path */
+	char path[100] = "./dumpFiles/";
+	strcat(path,fileName);
+	strcat(path,".dump");
 
-	/**
-	 * It is recommened to call munmap(...) but the process is going to terminate anyway.
-	 */
-	free(rel->columns);
-	free(rel);
+	FILE* fp;
+	if(  (fp=fopen(path,"w"))==NULL)
+	{
+		perror("fopen failed[dumpRelation]");
+		exit(EXIT_FAILURE);
+	}
+
+	for (unsigned i=0;i<rel->numOfTuples;++i)
+	{
+		for(unsigned j=0;j<rel->numOfCols;++j)
+			fprintf(fp,"%lu|", rel->columns[j][i]);
+		fprintf(fp,"\n");		
+	}
+	fclose(fp); 
 }
 
 void printRelation(struct Relation *rel)
@@ -101,4 +108,14 @@ void printRelation(struct Relation *rel)
 			printf("%lu|", rel->columns[j][i]);
 		printf("\n");		
 	} 
+}
+
+void destroyRelation(struct Relation *rel)
+{
+	/**
+	 * It is recommened to call munmap(...) but the process is going 
+	 * to terminate anyway afterwards.
+	 */
+	free(rel->columns);
+	free(rel);
 }

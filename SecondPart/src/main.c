@@ -1,7 +1,9 @@
 #include <stdio.h>
-#include <string.h>
+#include <string.h> /*strcmp()*/
+#include <stdlib.h> /*exit()*/
 #include "Joiner.h"
 #include "Parser.h"
+#include "Utils.h"
 
 int main(int argc, char const *argv[])
 {
@@ -13,21 +15,23 @@ int main(int argc, char const *argv[])
     // Read join relations and load them to memory
     setup(joiner);
 
-    // Read each query line 
-    // Parse query by splitting it into parts [createQueryInfo(...)]
-    // Execute query and write checksum to stdout [join(...)]
-	
-	// struct QueryInfo *q;
-	// char buffer[1024];
-	// while (fgets(buffer, sizeof(buffer), stdin) != NULL)
-	// {
-	// 	// End of batch
-	// 	if(!strcmp(buffer,"F"))
-	// 		continue;
-	// 	createQueryInfo(&q,buffer);
-	// 	join(joiner,q);
-	// }
+    // Read query line 
+    // Parse query by splitting it into parts 
+    // Execute query and write checksum to stdout
+    // Destroy query 
+	struct QueryInfo *q;
+	char buffer[BUFFERSIZE];
+	while (fgets(buffer, sizeof(buffer), stdin) != NULL)
+	{	
+		// End of batch
+		if(!strcmp(buffer,"F\n"))
+			continue;
 
+		createQueryInfo(&q,buffer);
+		// join(joiner,q);
+		destroyQueryInfo(q);
+	}
+	
     // Cleanup memory 
     destroyJoiner(joiner);
 	return 0;

@@ -2,22 +2,19 @@
 #define JOINER_H
 
 #include <stdint.h>
-#include "Relation.h"
+// #include "Relation.h"
+#include "Parser.h"
 
 
 struct Joiner
 {
 	struct Relation **relations;
-	uint64_t numOfRelations;
-	uint64_t capacity; // Used for realloc
-	
-	// We might need to add some more fields later
+	unsigned numOfRelations; 
 };
 
 /**
  * @brief      Creates a new joiner.Also, it initializes
- *             joiner's fields (relations,numOfRelations,capacity)
- *
+ *             joiner's members (relations,numOfRelations,capacity)
  */
 void createJoiner(struct Joiner **joiner);
 
@@ -34,12 +31,12 @@ void setup(struct Joiner *joiner);
  */
 void addRelation(struct Joiner *joiner,char *fileName);
 
+void join(struct Joiner *joiner,struct QueryInfo *q);
 
 /**
  * @brief      Calls destroyRelation for each relation 
  *             Free-s joiner
  */
 void destroyJoiner(struct Joiner *joiner);
-
 
 #endif

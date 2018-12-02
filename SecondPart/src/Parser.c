@@ -1,4 +1,196 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h> /*strtok(),strcpy()*/
+
 #include "Parser.h"
+#include "Utils.h"
+
+void createQueryInfo(struct QueryInfo **qInfo,char *rawQuery)
+{
+	*qInfo = allocate(sizeof(struct QueryInfo),"createQueryInfo");
+	parseQuery(*qInfo,rawQuery);
+}
+
+void destroyQueryInfo(struct QueryInfo *qInfo)
+{
+	free(qInfo->relationIds);
+	free(qInfo->predicates);
+	free(qInfo->filters);
+	free(qInfo->selections);
+	free(qInfo);			
+}
+
+void parseQuery(struct QueryInfo *qInfo,char *rawQuery)
+{
+	char rawRelations[BUFFERSIZE];
+	char rawPredicates[BUFFERSIZE];
+	char rawSelections[BUFFERSIZE];
+
+	/* Split query into three parts */
+	if( (sscanf(rawQuery,"%[^|]|%[^|]|%[^|]",rawRelations,rawPredicates,rawSelections)) != 3 )
+	{
+		fprintf(stderr,"Query \"%s\" does not consist of three parts\nExiting...\n\n",rawQuery);
+		exit(EXIT_FAILURE);
+	}
+
+	/* Parse each part */
+	parseRelationIds(qInfo,rawRelations);
+	parsePredicates(qInfo,rawPredicates);
+	parseSelections(qInfo,rawSelections);
+}
+
+void parseRelationIds(struct QueryInfo *qInfo,char *rawRelations)
+{
+	char* temp = rawRelations;
+	unsigned i;
+	int offset;
+
+	/* Get number of relationIds */
+	qInfo->numOfRelationIds = 0;
+	while(sscanf(temp,"%*d%n",&offset)>=0)
+	{
+		++qInfo->numOfRelationIds;
+		temp+=offset;
+	}
+	if(!qInfo->numOfRelationIds)
+	{
+		fprintf(stderr,"Zero join relations were found in the query\nExiting...\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Allocate memory for relationIds */
+	qInfo->relationIds = allocate(qInfo->numOfRelationIds*sizeof(unsigned),"parseRelationIds");
+
+	/* Store relationIds */
+	temp = rawRelations;
+	i=0;
+	while(sscanf(temp,"%u%n",&qInfo->relationIds[i],&offset)>0)
+	{
+		++i;
+		temp+=offset;
+	}
+}
+
+void parseSelections(struct QueryInfo *qInfo,char *rawSelections)
+{
+
+	char* temp = rawSelections;
+	unsigned relId,colId,i;
+	int offset;
+	
+	/* Get number of selections */
+	qInfo->numOfSelections = 0;
+	while(sscanf(temp,"%*u.%*u%n",&offset)>=0)
+	{
+		++qInfo->numOfSelections;
+		temp+=offset;
+	}
+	if(!qInfo->numOfSelections)
+	{
+		fprintf(stderr,"Zero selections were found in the query\nExiting...\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Allocate memory for selections */
+	qInfo->selections = allocate(qInfo->numOfSelections*sizeof(struct SelectInfo),"parseSelections");
+
+	/*  Store selections */
+	temp = rawSelections;
+	i=0;
+	while(sscanf(temp,"%u.%u%n",&relId,&colId,&offset)>0)
+	{
+		qInfo->selections[i].relId = relId;
+		qInfo->selections[i].colId = colId;
+		++i;
+		temp+=offset;
+	}
+}
+
+void parsePredicates(struct QueryInfo *qInfo,char *rawPredicates)
+{
+	unsigned i,j;
+	char *token;
+	char *temp = malloc((strlen(rawPredicates)+1)*sizeof(char));
+	strcpy(temp,rawPredicates);
+
+	/* Get number of predicates and filters */
+	qInfo->numOfFilters    = 0;
+	qInfo->numOfPredicates = 0;
+	token = strtok(temp,"&");
+	if(isFilter(token))
+		++qInfo->numOfFilters;
+	else
+		++qInfo->numOfPredicates;
+	while(token=strtok(NULL,"&"))
+		if(isFilter(token))
+			++qInfo->numOfFilters;
+		else
+			++qInfo->numOfPredicates;
+
+	if(!(qInfo->numOfPredicates+qInfo->numOfFilters))
+	{
+		fprintf(stderr,"Zero predicates were found in the query\nExiting...\n\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Allocate memory for predicates and filters */
+	qInfo->predicates = allocate(qInfo->numOfPredicates*sizeof(struct PredicateInfo),"parsePredicates - join predicates");
+	qInfo->filters    = allocate(qInfo->numOfFilters*sizeof(struct FilterInfo),"parsePredicates - filters");
+
+	/* Store predicates & filters */
+	strcpy(temp,rawPredicates);
+	token = strtok(temp,"&");
+	i=j=0;
+	if(isFilter(token))
+		{addFilter(&qInfo->filters[i],token);++i;}
+	else
+		{addPredicate(&qInfo->predicates[j],token);++j;}
 
 
+	while(token=strtok(NULL,"&"))
+		if(isFilter(token))
+			{addFilter(&qInfo->filters[i],token);++i;}
+		else
+			{addPredicate(&qInfo->predicates[j],token);++j;}
 
+	free(temp);
+}
+
+void addFilter(struct FilterInfo *fInfo,char *token)
+{
+	unsigned relId;
+	unsigned colId;
+	char cmp;
+	uint64_t constant;
+	sscanf(token,"%u.%u%c%lu",&relId,&colId,&cmp,&constant);
+	// printf("\"%u.%u%c%lu\"\n",relId,colId,cmp,constant);
+	fInfo->filterLhs.relId = relId;
+	fInfo->filterLhs.colId = colId;
+	fInfo->comparison      = cmp;
+	fInfo->constant        = constant;
+}
+
+void addPredicate(struct PredicateInfo *pInfo,char *token)
+{
+	unsigned relId1;
+	unsigned colId1;
+	unsigned relId2;
+	unsigned colId2;
+	sscanf(token,"%u.%u=%u.%u",&relId1,&colId1,&relId2,&colId2);
+	// printf("\"%u.%u=%u.%u\"\n",relId1,colId1,relId2,colId2);
+	pInfo->left.relId  = relId1;
+	pInfo->left.colId  = colId1;
+	pInfo->right.relId = relId2;
+	pInfo->right.colId = colId2;
+}
+
+int isFilter(char *predicate)
+{
+	char constant[20];
+	sscanf(predicate,"%*u.%*u%*[=<>]%s",constant);
+
+	if(!strstr(constant,"."))
+		return 1;
+	else 
+		return 0;
+}

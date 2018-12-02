@@ -4,3 +4,5 @@
 # ignore all files inside build directory
 build/
 
+# ingore all files inside dumpFiles directory
+dumpFiles/
