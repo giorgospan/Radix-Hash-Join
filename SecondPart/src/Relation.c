@@ -80,7 +80,7 @@ void loadRelation(struct Relation *rel,char *fileName)
 void dumpRelation(struct Relation *rel,char *fileName)
 {
 	/* Create path */
-	char path[100] = "./dumpFiles/";
+	char path[100] = "../../dumpFiles/";
 	strcat(path,fileName);
 	strcat(path,".dump");
 

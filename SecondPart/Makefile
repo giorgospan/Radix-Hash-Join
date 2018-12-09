@@ -2,7 +2,7 @@
 INCDIR  := ./include
 SRCDIR  := ./src
 TESTDIR := ./test
-BUILDDIR:= ./build
+BUILDDIR:= ./build/release
 
 # path to our custom test file
 WORKPATH:= ./workloads/small/custom_input_file
@@ -20,19 +20,21 @@ CC      := gcc
 CFLAGS  := -g -I $(INCDIR)  # -g enables debugging
 
 #############################################################
-# run the program
-all: clean $(BUILDDIR)/$(TARGET)
-	$(BUILDDIR)/$(TARGET) < $(WORKPATH)
+# Build harness and Driver
+all: $(BUILDDIR)/harness $(BUILDDIR)/$(TARGET)
+
+# all: clean $(BUILDDIR)/$(TARGET)
+# 	$(BUILDDIR)/$(TARGET) < $(WORKPATH)
 
 valgrind: clean $(BUILDDIR)/$(TARGET)
-	valgrind $(BUILDDIR)/$(TARGET) < $(WORKPATH)
+	valgrind --leak-check=yes $(BUILDDIR)/$(TARGET) < $(WORKPATH)
 
 # create executable [by linking object files]
-$(BUILDDIR)/$(TARGET): ./$(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ ./$(OBJECTS) 
+$(BUILDDIR)/$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $(OBJECTS) 
 
 # create object files
-./$(OBJECTS): ./%.o : $(SRCDIR)/%.c 
+$(OBJECTS): ./%.o : $(SRCDIR)/%.c 
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #############################################################
@@ -63,7 +65,7 @@ test%.o: $(TESTDIR)/test%.c
 # clean up
 .PHONY: clean
 clean:
-	@rm -f  harness.o $(OBJECTS) $(BUILDDIR)/* ./dumpFiles/*
+	@rm -f harness.o $(OBJECTS) $(BUILDDIR)/* ./dumpFiles/*
 	# @find ./test* -maxdepth 0 -type f -delete 
 	@echo "Cleanup complete!"
 

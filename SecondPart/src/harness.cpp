@@ -277,8 +277,8 @@ int main(int argc, char *argv[]) {
 
       bool matched = val == result_batches[batch][i];
       if (!matched) {
-        cerr << "Result mismatch for query " << query_no << ", expected: " << result_batches[batch][i]
-                  << ", actual: " << val << endl;
+        cerr << "Result mismatch for query " << query_no << ", expected: " <<"\""<<result_batches[batch][i]<<"\""
+                  << ", actual: " <<"\""<<val<<"\"" << endl;
         ++failure_cnt;
       }
       /*if (matched)
@@ -295,7 +295,10 @@ int main(int argc, char *argv[]) {
   if (failure_cnt == 0) {
     // Output the elapsed time in milliseconds
     double elapsed_sec = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
-    cout << (long)(elapsed_sec * 1000) << endl;
+    // cout << (long)(elapsed_sec * 1000) << endl;
+    cout << "=========================" << endl;
+    cout << "Elapsed time: " << elapsed_sec << " sec" << endl;
+    cout << "=========================" << endl;
     return EXIT_SUCCESS;
   }
 

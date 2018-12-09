@@ -2,8 +2,7 @@
 #define PARSER_H
 
 #include <stdint.h>
-
-typedef enum Comparison { Less='<', Greater='>', Equal='=' } Comparison;
+#include "Utils.h"
 
 struct SelectInfo
 {
@@ -76,8 +75,24 @@ void parseQuery(struct QueryInfo *qInfo,char *rawQuery);
  */
 int isFilter(char *predicate);
 
+int isColEquality(struct PredicateInfo *pInfo);
 void addFilter(struct FilterInfo *fInfo,char *token);
-
 void addPredicate(struct PredicateInfo *pInfo,char *token);
 
+/* 
+ * "Getter" functions. 
+ * Despite having access to each struct's members from anywhere in our program,
+ * we use "getter" functions just to make our code more neat & clean.
+ */
+unsigned getOriginalRelId(struct QueryInfo *qInfo,struct SelectInfo *sInfo);
+unsigned getRelId(struct SelectInfo *sInfo);
+unsigned getColId(struct SelectInfo *sInfo);
+uint64_t getConstant(struct FilterInfo *fInfo);
+Comparison getComparison(struct FilterInfo *fInfo);
+unsigned getNumOfRelations(struct QueryInfo *qInfo);
+unsigned getNumOfFilters(struct QueryInfo *qInfo);
+unsigned getNumOfColEqualities(struct QueryInfo *qInfo);
+unsigned getNumOfJoins(struct QueryInfo *qInfo);
+
+void printTest(struct QueryInfo *qInfo);
 #endif

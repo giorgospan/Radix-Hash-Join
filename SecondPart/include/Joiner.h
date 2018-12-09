@@ -2,15 +2,14 @@
 #define JOINER_H
 
 #include <stdint.h>
-// #include "Relation.h"
 #include "Parser.h"
-
 
 struct Joiner
 {
 	struct Relation **relations;
 	unsigned numOfRelations; 
 };
+
 
 /**
  * @brief      Creates a new joiner.Also, it initializes
@@ -23,7 +22,6 @@ void createJoiner(struct Joiner **joiner);
  */
 void setup(struct Joiner *joiner);
 
-
 /**
  * @brief      Adds a new relation to the given joiner struct
  * 
@@ -31,6 +29,10 @@ void setup(struct Joiner *joiner);
  */
 void addRelation(struct Joiner *joiner,char *fileName);
 
+/**
+ * @brief      Executes the given query and writes
+ *             its result's checksum in stdout.
+ */
 void join(struct Joiner *joiner,struct QueryInfo *q);
 
 /**
@@ -38,5 +40,10 @@ void join(struct Joiner *joiner,struct QueryInfo *q);
  *             Free-s joiner
  */
 void destroyJoiner(struct Joiner *joiner);
+
+unsigned getRelationTuples(struct Joiner *joiner,unsigned relId);
+
+uint64_t *getColumn(struct Joiner *joiner,unsigned relId,unsigned colId);
+
 
 #endif

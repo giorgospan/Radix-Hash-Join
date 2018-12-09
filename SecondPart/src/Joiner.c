@@ -5,9 +5,10 @@
 
 #include "Joiner.h"
 #include "Relation.h"
+#include "Intermediate.h"
 #include "Utils.h"
 
-void createJoiner(struct Joiner** joiner)
+void createJoiner(struct Joiner **joiner)
 {
 
 	*joiner = allocate(sizeof(struct Joiner),"createJoiner");
@@ -15,7 +16,7 @@ void createJoiner(struct Joiner** joiner)
 	(*joiner)->relations      = NULL;
 }
 
-void setup(struct Joiner* joiner)
+void setup(struct Joiner *joiner)
 {
 	/* Contains all file names : "r0\nr1\nr2\n....r20\n" */
 	char *buffer   = allocate(BUFFERSIZE*sizeof(char),"setup(..)-buffer");
@@ -47,7 +48,7 @@ void setup(struct Joiner* joiner)
 	free(buffer);
 }
 
-void addRelation(struct Joiner* joiner,char *fileName)
+void addRelation(struct Joiner *joiner,char *fileName)
 {	
 
 	/* Indicates the number of relations added so far */
@@ -64,10 +65,48 @@ void addRelation(struct Joiner* joiner,char *fileName)
 
 void join(struct Joiner *joiner,struct QueryInfo *q)
 {
+	struct InterMetaData *inter;
+	createInterMetaData(&inter,q);
 
+	// printf("=========================================================\n");
+	// printf("Column Equalities\n");
+	// printf("=========================================================\n");
+	applyColumnEqualities(inter,joiner,q);
+	
+	// printf("=========================================================\n");
+	// printf("Filters\n");
+	// printf("=========================================================\n");
+	applyFilters(inter,joiner,q);
+
+	// printf("=========================================================\n");
+	// printf("Joins\n");
+	// printf("=========================================================\n");
+	applyJoins(inter,joiner,q);
+
+
+	// printf("=========================================================\n");
+	// printf("CheckSums\n");
+	// printf("=========================================================\n");
+	applyCheckSums(inter,joiner,q);
+
+
+	// printf("=========================================================\n");
+	// printf("Destruction\n");
+	// printf("=========================================================\n");
+	destroyInterMetaData(inter);	
 }
 
-void destroyJoiner(struct Joiner* joiner)
+uint64_t *getColumn(struct Joiner *joiner,unsigned relId,unsigned colId)
+{
+	return joiner->relations[relId]->columns[colId];
+}
+
+unsigned getRelationTuples(struct Joiner *joiner,unsigned relId)
+{
+	return joiner->relations[relId]->numOfTuples;
+}
+
+void destroyJoiner(struct Joiner *joiner)
 {
 	for (unsigned i=0;i<joiner->numOfRelations;++i) 
 		destroyRelation(joiner->relations[i]);

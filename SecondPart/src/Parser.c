@@ -194,3 +194,84 @@ int isFilter(char *predicate)
 	else 
 		return 0;
 }
+
+int isColEquality(struct PredicateInfo *pInfo)
+{return (pInfo->left.relId == pInfo->right.relId); }
+
+unsigned getRelId(struct SelectInfo *sInfo)
+{return sInfo->relId;}
+
+unsigned getOriginalRelId(struct QueryInfo *qInfo,struct SelectInfo *sInfo)
+{return qInfo->relationIds[sInfo->relId];}
+
+unsigned getColId(struct SelectInfo *sInfo)
+{return sInfo->colId;}
+
+uint64_t getConstant(struct FilterInfo *fInfo)
+{return fInfo->constant;}
+
+Comparison getComparison(struct FilterInfo *fInfo)
+{return fInfo->comparison;}
+
+unsigned getNumOfFilters(struct QueryInfo *qInfo)
+{return qInfo->numOfFilters;}
+
+unsigned getNumOfRelations(struct QueryInfo *qInfo)
+{return qInfo->numOfRelationIds;}
+
+unsigned getNumOfColEqualities(struct QueryInfo *qInfo)
+{
+	unsigned sum=0;
+	for(unsigned i=0;i<qInfo->numOfPredicates;++i)
+		if(isColEquality(&qInfo->predicates[i]))
+			++sum;
+	return sum;	
+}
+
+unsigned getNumOfJoins(struct QueryInfo *qInfo)
+{
+	unsigned sum=0;
+	for(unsigned i=0;i<qInfo->numOfPredicates;++i)
+		if(!isColEquality(&qInfo->predicates[i]))
+			++sum;
+	return sum;
+}
+
+/**************************** For Testing... ***************************************/
+void printTest(struct QueryInfo *qInfo)
+{
+	for(unsigned j=0;j<qInfo->numOfRelationIds;++j)
+	{
+		printf("%u ",qInfo->relationIds[j]);
+	}
+	printf("|");
+	for(unsigned j=0;j<qInfo->numOfPredicates;++j)
+	{
+		unsigned leftRelId  = getRelId(&qInfo->predicates[j].left);
+		unsigned rightRelId = getRelId(&qInfo->predicates[j].right);
+		unsigned leftColId  = getColId(&qInfo->predicates[j].left);
+		unsigned rightColId = getColId(&qInfo->predicates[j].right);
+
+		if(isColEquality(&qInfo->predicates[j]))
+			printf("[%u.%u=%u.%u] & ",leftRelId,leftColId,rightRelId,rightColId);
+		else
+			printf("%u.%u=%u.%u & ",leftRelId,leftColId,rightRelId,rightColId);
+	} 
+	for(unsigned j=0;j<qInfo->numOfFilters;++j)
+	{
+		unsigned relId    = getRelId(&qInfo->filters[j].filterLhs);
+		unsigned colId    = getColId(&qInfo->filters[j].filterLhs);
+		Comparison cmp    = getComparison(&qInfo->filters[j]);
+		uint64_t constant = getConstant(&qInfo->filters[j]);
+
+		printf("%u.%u%c%ld & ",relId,colId,cmp,constant);
+	}
+	printf("|");
+	for(unsigned j=0;j<qInfo->numOfSelections;++j)
+	{
+		unsigned relId = getRelId(&qInfo->selections[j]);
+		unsigned colId = getColId(&qInfo->selections[j]);
+		printf("%u.%u ",relId,colId);
+	}
+	printf("\n\n");
+}

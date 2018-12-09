@@ -2,7 +2,10 @@
 *.o
 
 # ignore all files inside build directory
-build/
+build/release/
 
 # ingore all files inside dumpFiles directory
 dumpFiles/
+
+# ignore all .log files
+*.log
