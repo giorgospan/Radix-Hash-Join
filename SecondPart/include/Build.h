@@ -3,8 +3,8 @@
 
 #include "Partition.h"/* for "RadixHashJoinInfo" type*/
 
-#define  HASH_RANGE_2 101
-#define  HASH_FUN_2(KEY) ((KEY)%(101))
+#define  HASH_RANGE_2 301
+#define  HASH_FUN_2(KEY) ((KEY)%(301))
 
 void build(RadixHashJoinInfo *infoLeft,RadixHashJoinInfo *infoRight);
 void initializeIndexArray(RadixHashJoinInfo *info);

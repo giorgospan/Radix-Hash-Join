@@ -74,10 +74,10 @@ RadixHashJoinInfo* partition(JoinArg *joinRel)
 
 void sortColumn(RadixHashJoinInfo *info)
 {
-	info->sorted          = allocate(sizeof(ColumnInfo),"sortColumn1");
-	info->sorted->values  = allocate(info->columnSize*sizeof(uint64_t),"sortColumn2");
-	info->sorted->rowIds  = allocate(info->columnSize*sizeof(unsigned),"sortColumn3");
-	unsigned *pSumCopy = copyPsum(info->pSum);
+	info->sorted         = allocate(sizeof(ColumnInfo),"sortColumn1");
+	info->sorted->values = allocate(info->columnSize*sizeof(uint64_t),"sortColumn2");
+	info->sorted->rowIds = allocate(info->columnSize*sizeof(unsigned),"sortColumn3");
+	unsigned *pSumCopy   = copyPsum(info->pSum);
 	createVectorFixedSize(&info->sorted->tuples,info->tupleSize,info->columnSize);
 
 	for(unsigned i=0;i<info->columnSize;++i)

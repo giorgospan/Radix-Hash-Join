@@ -30,7 +30,7 @@ void insertAtVector(struct Vector *vector,unsigned *tuple)
 	if(isEmpty(vector))
 	{
 		/* Starting with 10 tuples */
-		vector->capacity = 10000*vector->tupleSize;
+		vector->capacity = 1000000*vector->tupleSize;
 		vector->table    = allocate(vector->capacity*sizeof(unsigned),"insertAtVector");
 	}
 

@@ -53,7 +53,7 @@ $(BUILDDIR)/harness: ./harness.o
 # run testX , X=1,2,3...
 # note that we also need the files of our actual program in order to run a test
 test%: test%.o $(filter-out ./main.o, ./$(OBJECTS))
-	@$(CC) $(CFLAGS) -o $@ $^ -lcunit
+	$(CC) $(CFLAGS) -o $@ $^ -lcunit
 	@./$@
 
 test%.o: $(TESTDIR)/test%.c

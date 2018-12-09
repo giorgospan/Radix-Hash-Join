@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "Intermediate.h"/*for JoinArg type*/
 
-#define  RADIX_BITS 4
-#define  HASH_RANGE_1 16  
+#define  RADIX_BITS 7
+#define  HASH_RANGE_1 128  
 #define  HASH_FUN_1(KEY) ((KEY) & ((1<<RADIX_BITS)-1))
 
 typedef struct ColumnInfo

@@ -106,7 +106,6 @@ void joinNonInterNonInter(struct InterMetaData *inter,JoinArg* left,JoinArg* rig
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
 
-
 	destroyRadixHashJoinInfo(infoLeft);
 	destroyRadixHashJoinInfo(infoRight);
 }

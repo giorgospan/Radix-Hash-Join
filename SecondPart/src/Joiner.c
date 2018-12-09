@@ -10,7 +10,6 @@
 
 void createJoiner(struct Joiner **joiner)
 {
-
 	*joiner = allocate(sizeof(struct Joiner),"createJoiner");
 	(*joiner)->numOfRelations = 0;
 	(*joiner)->relations      = NULL;
@@ -108,9 +107,8 @@ unsigned getRelationTuples(struct Joiner *joiner,unsigned relId)
 
 void destroyJoiner(struct Joiner *joiner)
 {
-	for (unsigned i=0;i<joiner->numOfRelations;++i) 
+	for (unsigned i=0;i<joiner->numOfRelations;++i)
 		destroyRelation(joiner->relations[i]);
-
 	free(joiner->relations);
 	free(joiner);
 }

@@ -3,8 +3,7 @@
 #include "Vector.h"
 #include "Partition.h"
 
-struct Vector *probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results);
-
+void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results);
 /**
  * @brief      Checks for equality between the two column values and inserts to the
  *             results vector a tuple constructed from the two tuples [one from each column]

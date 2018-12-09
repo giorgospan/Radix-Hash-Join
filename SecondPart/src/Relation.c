@@ -31,6 +31,7 @@ void loadRelation(struct Relation *rel,char *fileName)
 	strcat(filepath,fileName);
 
 	/* Open relation file */
+	// printf("About to open file:\"%s\"\n",filepath);
 	if( (fd = open(filepath, O_RDONLY)) == -1){
 		perror("open failed[loadRelation]");
 		exit(EXIT_FAILURE);

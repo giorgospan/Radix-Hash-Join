@@ -6,7 +6,7 @@
 #include "Build.h"
 #include "Utils.h"
 
-struct Vector *probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results)
+void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results)
 {
 	unsigned i;
 	unsigned searchBucket;
