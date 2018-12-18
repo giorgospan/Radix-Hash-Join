@@ -24,19 +24,11 @@ void loadRelation(struct Relation *rel,char *fileName)
 {
 	int fd;
 
-	/* Construct the correct path to file */
-	char *filepath = allocate(sizeof(char)*(strlen(FILEPATH)+strlen(fileName)+1),"loadRelation-filepath");
-
-	strcpy(filepath,FILEPATH);
-	strcat(filepath,fileName);
-
 	/* Open relation file */
-	// printf("About to open file:\"%s\"\n",filepath);
-	if( (fd = open(filepath, O_RDONLY)) == -1){
+	if( (fd = open(fileName, O_RDONLY)) == -1){
 		perror("open failed[loadRelation]");
 		exit(EXIT_FAILURE);
 	}
-	free(filepath);	
 
 	/* Find its size (in bytes) */
 	struct stat sb;

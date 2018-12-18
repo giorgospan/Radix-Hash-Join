@@ -1,10 +1,6 @@
 #ifndef RELATION_H
 #define RELATION_H
 
-#define FILEPATH "../../workloads/small/"
-// #define FILEPATH "./workloads/small/"
-
-
 #include <stdint.h>
 
 

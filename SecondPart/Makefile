@@ -10,18 +10,20 @@ WORKPATH:= ./workloads/small/custom_input_file
 # name of our executable
 TARGET  := Driver
 
-# specify source,object,header files & test source files
+# specify source,object,header files & test source/object files
 SOURCES := $(wildcard $(SRCDIR)/*.c)
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=./%.o)
 INCLUDES:= $(wildcard $(INCDIR)/*.h)
-TESTS   := $(wildcard $(TESTDIR)/*.c)
+
+TESTSRCS:= $(wildcard $(TESTDIR)/*.c)
+TESTOBJS:= $(TESTSRCS:$(TESTDIR)/%.c=./%.o)
 
 CC      := gcc
-CFLAGS  := -g -I $(INCDIR)  # -g enables debugging
+CFLAGS  := -O3 -I $(INCDIR)  # -O3 for even more compiler optimization
 
 #############################################################
-# Build harness and Driver
-all: $(BUILDDIR)/harness $(BUILDDIR)/$(TARGET)
+# Build harness Driver and unittest
+all: $(BUILDDIR)/harness $(BUILDDIR)/$(TARGET) unittest
 
 # all: clean $(BUILDDIR)/$(TARGET)
 # 	$(BUILDDIR)/$(TARGET) < $(WORKPATH)
@@ -41,22 +43,22 @@ $(OBJECTS): ./%.o : $(SRCDIR)/%.c
 
 # create harness executable
 $(BUILDDIR)/harness: ./harness.o
-	g++ -g -o $@ $^
+	g++ -O3 -o $@ $^
 
 # create harness object file
 ./harness.o: $(SRCDIR)/harness.cpp
-	g++ -g -c $< -o $@
+	g++ -O3 -c $< -o $@
 
 
 #############################################################
 
-# run testX , X=1,2,3...
-# note that we also need the files of our actual program in order to run a test
-test%: test%.o $(filter-out ./main.o, ./$(OBJECTS))
+# note that we discard the main function of our program.
+# that is because we want to use the main function that we 
+# have in TESTDIR
+unittest: $(TESTOBJS) $(filter-out ./main.o, ./$(OBJECTS))
 	$(CC) $(CFLAGS) -o $@ $^ -lcunit
-	@./$@
 
-test%.o: $(TESTDIR)/test%.c
+$(TESTOBJS): ./%.o : $(TESTDIR)/%.c 
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
@@ -65,8 +67,7 @@ test%.o: $(TESTDIR)/test%.c
 # clean up
 .PHONY: clean
 clean:
-	@rm -f harness.o $(OBJECTS) $(BUILDDIR)/* ./dumpFiles/*
-	# @find ./test* -maxdepth 0 -type f -delete 
+	@rm -f harness.o $(OBJECTS) $(TESTOBJS) $(BUILDDIR)/* ./dumpFiles/* unittest
 	@echo "Cleanup complete!"
 
 # count 
