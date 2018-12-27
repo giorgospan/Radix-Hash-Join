@@ -33,10 +33,25 @@ struct InterMetaData
 	unsigned maxNumOfVectors;
 };
 
+typedef struct ColumnInfo
+{
+	uint64_t *values;
+	unsigned *rowIds;
+	struct Vector *tuples;
+}ColumnInfo;
+
+typedef struct Index
+{
+	/* These are the two arrays
+		used for the indexing of a single bucket */
+	unsigned *chainArray;
+	unsigned *bucketArray;	
+}Index;
+
 /**
  * @brief      Holds info about the relation we are joining
  */
-typedef struct JoinArg
+typedef struct RadixHashJoinInfo
 {
 	// Id of the relation [relevant to the parse order]
 	unsigned relId;
@@ -76,17 +91,28 @@ typedef struct JoinArg
 	// 0 otherwise
 	unsigned isInInter;
 
-}JoinArg;
+	// Will be set to 1 during build phase, in case this is the small column
+	// between the two columns we're joining.
+	unsigned isSmall;
+	// 1: if it is on join's lhs, 0 otherwise
+	unsigned isLeft;
+
+	ColumnInfo *unsorted;
+	ColumnInfo *sorted;
+	unsigned *hist;
+	unsigned *pSum;
+	Index **indexArray;
+}RadixHashJoinInfo;
 
 /* Creators/Initializers */
 void createInterMetaData(struct InterMetaData **inter,struct QueryInfo *q);
-void initalizeJoinArg(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,JoinArg *arg);
+void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg);
 
 /* Apply Functions */
 void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,struct QueryInfo *q);
 void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct QueryInfo *q);
 void applyJoins(struct InterMetaData *inter,struct Joiner* joiner,struct QueryInfo *q);
-void applyProperJoin(struct InterMetaData *inter,JoinArg* argLeft,JoinArg* argRight);
+void applyProperJoin(struct InterMetaData *inter,RadixHashJoinInfo* argLeft,RadixHashJoinInfo* argRight);
 void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct QueryInfo *q);
 
 /* Check functions */
@@ -100,5 +126,7 @@ void printCheckSum(uint64_t checkSum,unsigned iSLast);
 
 /* Destroyer */
 void destroyInterMetaData(struct InterMetaData *inter);
+void destroyRadixHashJoinInfo(RadixHashJoinInfo *);
+void destroyColumnInfo(ColumnInfo **c);
 
 #endif

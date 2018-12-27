@@ -67,19 +67,19 @@ void filterInter(uint64_t *col,Comparison cmp,uint64_t constant,struct Vector **
 	destroyVector(&old);
 }
 
-void joinNonInterNonInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
+void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHashJoinInfo* right)
 {
 	// Partition the two columns
-	RadixHashJoinInfo *infoLeft  = partition(left);
-	RadixHashJoinInfo *infoRight = partition(right);
+	partition(left);
+	partition(right);
 
 	// Build index (for the smallest one)
-	build(infoLeft,infoRight);
+	build(left,right);
 
 	// Probe
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(infoLeft,infoRight,result);
+	probe(left,right,result);
 	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
 	// printVector(result);
 
@@ -106,23 +106,23 @@ void joinNonInterNonInter(struct InterMetaData *inter,JoinArg* left,JoinArg* rig
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
 
-	destroyRadixHashJoinInfo(infoLeft);
-	destroyRadixHashJoinInfo(infoRight);
+	destroyRadixHashJoinInfo(left);
+	destroyRadixHashJoinInfo(right);
 }
 
-void joinNonInterInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
+void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHashJoinInfo* right)
 {
 	// Partition the two columns
-	RadixHashJoinInfo *infoLeft  = partition(left);
-	RadixHashJoinInfo *infoRight = partition(right);
+	partition(left);
+	partition(right);
 
 	// Build index (for the smallest one)
-	build(infoLeft,infoRight);
+	build(left,right);
 
 	// Probe
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(infoLeft,infoRight,result);
+	probe(left,right,result);
 	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
 	// printVector(result);
 
@@ -148,23 +148,23 @@ void joinNonInterInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
-	destroyRadixHashJoinInfo(infoLeft);
-	destroyRadixHashJoinInfo(infoRight);
+	destroyRadixHashJoinInfo(left);
+	destroyRadixHashJoinInfo(right);
 }
 
-void joinInterNonInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
+void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHashJoinInfo* right)
 {
 	// Partition the two columns
-	RadixHashJoinInfo *infoLeft  = partition(left);
-	RadixHashJoinInfo *infoRight = partition(right);
+	partition(left);
+	partition(right);
 
 	// Build index (for the smallest one)
-	build(infoLeft,infoRight);
+	build(left,right);
 
 	// Probe
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(infoLeft,infoRight,result);
+	probe(left,right,result);
 	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
 	// printVector(result);
 
@@ -189,11 +189,11 @@ void joinInterNonInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
-	destroyRadixHashJoinInfo(infoLeft);
-	destroyRadixHashJoinInfo(infoRight);
+	destroyRadixHashJoinInfo(left);
+	destroyRadixHashJoinInfo(right);
 }
 
-void joinInterInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
+void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHashJoinInfo* right)
 {
 	if(left->vector == right->vector)
 	{
@@ -204,16 +204,16 @@ void joinInterInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
 		return;
 	}
 	// Partition the two columns
-	RadixHashJoinInfo *infoLeft  = partition(left);
-	RadixHashJoinInfo *infoRight = partition(right);
+	partition(left);
+	partition(right);
 
 	// Build index (for the smallest one)
-	build(infoLeft,infoRight);
+	build(left,right);
 
 	// Probe
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(infoLeft,infoRight,result);
+	probe(left,right,result);
 	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
 	// printVector(result);
 
@@ -240,6 +240,6 @@ void joinInterInter(struct InterMetaData *inter,JoinArg* left,JoinArg* right)
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
-	destroyRadixHashJoinInfo(infoLeft);
-	destroyRadixHashJoinInfo(infoRight);
+	destroyRadixHashJoinInfo(left);
+	destroyRadixHashJoinInfo(right);
 }

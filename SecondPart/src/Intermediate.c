@@ -5,6 +5,7 @@
 
 #include "Intermediate.h"
 #include "Parser.h"
+#include "Partition.h"
 #include "Operations.h"
 #include "Utils.h"
 #include "Vector.h"/* vectorDestroy(..)*/
@@ -95,17 +96,17 @@ void applyJoins(struct InterMetaData *inter,struct Joiner* joiner,struct QueryIn
 	for(unsigned i=0;i<q->numOfPredicates;++i)
 		if(!isColEquality(&q->predicates[i]))
 		{
-			JoinArg argLeft,argRight;
-			initalizeJoinArg(inter,q,&q->predicates[i].left,joiner,&argLeft);
+			RadixHashJoinInfo argLeft,argRight;
+			initalizeInfo(inter,q,&q->predicates[i].left,joiner,&argLeft);
 			// printf(" = ");
-			initalizeJoinArg(inter,q,&q->predicates[i].right,joiner,&argRight);
+			initalizeInfo(inter,q,&q->predicates[i].right,joiner,&argRight);
 			// printf("\n");
 			applyProperJoin(inter,&argLeft,&argRight);
 			// printf("\n");
 		}
 }
 
-void applyProperJoin(struct InterMetaData *inter,JoinArg* argLeft,JoinArg* argRight)
+void applyProperJoin(struct InterMetaData *inter,RadixHashJoinInfo* argLeft,RadixHashJoinInfo* argRight)
 {
 	switch(argLeft->isInInter){
 	case 0:
@@ -198,7 +199,7 @@ void printCheckSum(uint64_t checkSum,unsigned isLast)
 		printf("%s ",string);
 }
 
-void initalizeJoinArg(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,JoinArg *arg)
+void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg)
 {
 	arg->relId          = getRelId(s);
 	arg->colId          = getColId(s);
@@ -206,8 +207,8 @@ void initalizeJoinArg(struct InterMetaData *inter,struct QueryInfo *q,struct Sel
 	arg->vector         = inter->interResults[getVectorPos(inter,arg->relId)];
 	arg->map            = inter->mapRels[getVectorPos(inter,arg->relId)];
 	arg->queryRelations = inter->queryRelations;
-	arg->ptrToVec 		= &inter->interResults[getVectorPos(inter,arg->relId)];
-	arg->ptrToMap 		= &inter->mapRels[getVectorPos(inter,arg->relId)];
+	arg->ptrToVec       = &inter->interResults[getVectorPos(inter,arg->relId)];
+	arg->ptrToMap       = &inter->mapRels[getVectorPos(inter,arg->relId)];
 
 	if(isInInter(arg->vector))
 	{
@@ -234,4 +235,41 @@ void destroyInterMetaData(struct InterMetaData *inter)
 	free(inter->interResults);
 	free(inter->mapRels);
 	free(inter);
+}
+
+
+void destroyRadixHashJoinInfo(RadixHashJoinInfo *info)
+{
+	destroyColumnInfo(&info->unsorted);
+	destroyColumnInfo(&info->sorted);
+	free(info->hist);
+	free(info->pSum);
+
+	/* For every bucket of the relation */
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+		/* If we've created an array of indexes for this relation */
+		if(info->indexArray)
+			/* If this bucket has an index */
+			if(info->indexArray[i] != NULL)
+			{
+				/* Free index fields */
+				free(info->indexArray[i]->chainArray);
+				free(info->indexArray[i]->bucketArray);
+
+				/* Free index struct itself */
+				free(info->indexArray[i]);
+			}
+	free(info->indexArray);
+}
+
+void destroyColumnInfo(ColumnInfo **c)
+{
+	if(*c)
+	{
+		free((*c)->values);
+		free((*c)->rowIds);
+		destroyVector(&(*c)->tuples);
+	}
+	free(*c);
+	*c = NULL;
 }

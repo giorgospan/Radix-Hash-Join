@@ -3,8 +3,7 @@
 #include <stdint.h>
 
 #include "Utils.h" /*Comparison type*/
-#include "Intermediate.h" /*JoinArg type*/
-#include "Partition.h"/*JoinColumn type*/
+#include "Intermediate.h" /*RadixHashJoinInfo type*/
 
 struct Vector
 {
@@ -50,7 +49,7 @@ unsigned *getTuple(struct Vector *vector,unsigned i);
 /* Scan functions [Used in the case of an intermediate relation]*/
 void scanColEquality(struct Vector *new,struct Vector* old,uint64_t *leftCol,uint64_t* rightCol,unsigned posLeft,unsigned posRight);
 void scanFilter(struct Vector *new,struct Vector* old,uint64_t *col,Comparison cmp,uint64_t constant);
-void scanJoin(RadixHashJoinInfo *info,JoinArg *joinRel);
+void scanJoin(RadixHashJoinInfo *joinRel);
 
 int isFull(struct Vector *vector);
 int isEmpty(struct Vector *vector);

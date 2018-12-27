@@ -277,8 +277,8 @@ int main(int argc, char *argv[]) {
 
       bool matched = val == result_batches[batch][i];
       if (!matched) {
-        cerr << "Result mismatch for query " << query_no << ", expected: " <<"\""<<result_batches[batch][i]<<"\""
-                  << ", actual: " <<"\""<<val<<"\"" << endl;
+        // cerr << "Result mismatch for query " << query_no << ", expected: " <<"\""<<result_batches[batch][i]<<"\""
+        //           << ", actual: " <<"\""<<val<<"\"" << endl;
         ++failure_cnt;
       }
       /*if (matched)

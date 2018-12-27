@@ -8,8 +8,8 @@
 void build(RadixHashJoinInfo *infoLeft,RadixHashJoinInfo *infoRight)
 {
 	RadixHashJoinInfo *big,*small;
-	big            = (infoLeft->columnSize > infoRight->columnSize) ? infoLeft:infoRight;
-	small          = (infoLeft->columnSize < infoRight->columnSize) ? infoLeft:infoRight;
+	big            = (infoLeft->numOfTuples > infoRight->numOfTuples) ? infoLeft:infoRight;
+	small          = (infoLeft->numOfTuples < infoRight->numOfTuples) ? infoLeft:infoRight;
 	big->isSmall   = 0;
 	small->isSmall = 1;
 
@@ -42,8 +42,8 @@ void initializeIndexArray(RadixHashJoinInfo *info)
 			/* Allocate space for bucket's index */
 			info->indexArray[i] = allocate(sizeof(struct Index),"initializeIndexArray2");
 
-			// Allocate space for its index's fields
-			info->indexArray[i]->chainArray  = allocate(bucketSize*sizeof(unsigned),"initializeIndexArray3");
+			/* Allocate space for index's fields */
+ 			info->indexArray[i]->chainArray  = allocate(bucketSize*sizeof(unsigned),"initializeIndexArray3");
 			info->indexArray[i]->bucketArray = allocate(HASH_RANGE_2*sizeof(unsigned),"initializeIndexArray4");
 
 			/* Initialize chainArray and bucketArray with 0's */

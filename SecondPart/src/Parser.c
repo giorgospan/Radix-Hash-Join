@@ -242,9 +242,9 @@ void printTest(struct QueryInfo *qInfo)
 {
 	for(unsigned j=0;j<qInfo->numOfRelationIds;++j)
 	{
-		printf("%u ",qInfo->relationIds[j]);
+		fprintf(stderr,"%u ",qInfo->relationIds[j]);
 	}
-	printf("|");
+	fprintf(stderr,"|");
 	for(unsigned j=0;j<qInfo->numOfPredicates;++j)
 	{
 		unsigned leftRelId  = getRelId(&qInfo->predicates[j].left);
@@ -253,9 +253,9 @@ void printTest(struct QueryInfo *qInfo)
 		unsigned rightColId = getColId(&qInfo->predicates[j].right);
 
 		if(isColEquality(&qInfo->predicates[j]))
-			printf("[%u.%u=%u.%u] & ",leftRelId,leftColId,rightRelId,rightColId);
+			fprintf(stderr,"[%u.%u=%u.%u] & ",leftRelId,leftColId,rightRelId,rightColId);
 		else
-			printf("%u.%u=%u.%u & ",leftRelId,leftColId,rightRelId,rightColId);
+			fprintf(stderr,"%u.%u=%u.%u & ",leftRelId,leftColId,rightRelId,rightColId);
 	} 
 	for(unsigned j=0;j<qInfo->numOfFilters;++j)
 	{
@@ -264,14 +264,13 @@ void printTest(struct QueryInfo *qInfo)
 		Comparison cmp    = getComparison(&qInfo->filters[j]);
 		uint64_t constant = getConstant(&qInfo->filters[j]);
 
-		printf("%u.%u%c%ld & ",relId,colId,cmp,constant);
+		fprintf(stderr,"%u.%u%c%ld & ",relId,colId,cmp,constant);
 	}
-	printf("|");
+	fprintf(stderr,"|");
 	for(unsigned j=0;j<qInfo->numOfSelections;++j)
 	{
 		unsigned relId = getRelId(&qInfo->selections[j]);
 		unsigned colId = getColId(&qInfo->selections[j]);
-		printf("%u.%u ",relId,colId);
+		fprintf(stderr,"%u.%u ",relId,colId);
 	}
-	printf("\n\n");
 }

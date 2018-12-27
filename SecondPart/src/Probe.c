@@ -1,10 +1,14 @@
 #include <stdio.h>
-#include <stdlib.h> /*free()*/
+#include <stdlib.h> /*malloc() and free()*/
+#include <string.h>/* strerror() */
+#include <errno.h>/* errno */
 
 #include "Probe.h"
 #include "Vector.h"
 #include "Build.h"
 #include "Utils.h"
+
+
 
 void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results)
 {
@@ -22,8 +26,16 @@ void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *resul
 	big   = left->isSmall ? right:left;
 	small = left->isSmall ? left:right;
 
+	unsigned *tupleToInsert;
+	unsigned tupleSize  = small->tupleSize+big->tupleSize;
+	if(  (tupleToInsert = malloc(tupleSize*sizeof(unsigned))) == NULL   ){
+		fprintf(stderr,"malloc failed[checkEqual]: %s\nExiting...\n\n",strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+
 	/* For every tuple(i.e:record) in the big relation */
-	for(i=0;i<big->columnSize;i++)
+	for(i=0;i<big->numOfTuples;i++)
 	{
 		/* The value we are gonna search for */
 		searchValue = big->sorted->values[i];
@@ -52,7 +64,7 @@ void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *resul
 		/* Warning: In bucketArray and chainArray we've stored the rowIds relevant to the bucket [i.e: 0 ~> bucketSize-1] */
 
 		k = searchIndex->bucketArray[hash] - 1;
-		checkEqual(small,big,i,start,searchValue,k,results);
+		checkEqual(small,big,i,start,searchValue,k,results,tupleToInsert);
 
 		while(1)
 		{	
@@ -64,20 +76,18 @@ void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *resul
 			else
 			{
 				k = searchIndex->chainArray[k] - 1;
-				checkEqual(small,big,i,start,searchValue,k,results);
+				checkEqual(small,big,i,start,searchValue,k,results,tupleToInsert);
 			}
 		}
 
 	}
+	free(tupleToInsert);
 }
 
-void checkEqual(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned i,unsigned start,unsigned searchValue,unsigned pseudoRow,struct Vector *results)
+void checkEqual(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned i,unsigned start,unsigned searchValue,unsigned pseudoRow,struct Vector *results,unsigned *tupleToInsert)
 {
 	uint32_t actualRow;
-	unsigned tupleSize      = small->tupleSize+big->tupleSize;
-	unsigned *tupleToInsert = allocate(tupleSize*sizeof(unsigned),"checkEqual");
-
-	/* We calculate the rowId relevant to the sorted array [i.e: 0 ~> columnSize] */
+	/* We calculate the rowId relevant to the sorted array [i.e: 0 ~> numOfTuples] */
 	actualRow = start + pseudoRow;
 	
 	/*
@@ -88,15 +98,15 @@ void checkEqual(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned i,unsig
 	{
 		constructTuple(small,big,actualRow,i,tupleToInsert);
 		insertAtVector(results,tupleToInsert);
+		
 	}
-	free(tupleToInsert);
 }
 
 
 void constructTuple(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned actualRow,unsigned i,unsigned *target)
 {
 	/**
-	 * We need to construct the tuple we're gonna add in the results vector
+	 * We need to construct the tuple that we're gonna add in the results vector
 	 * 
 	 * First,we add left column's tuple [it is important to add left column's tuple first]
 	 * Then,we add right column's tuple.
@@ -106,34 +116,24 @@ void constructTuple(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned act
 	 */
 	unsigned *t;
 	unsigned k=0;
-	RadixHashJoinInfo *left  = getLeftCol(small,big);
-	RadixHashJoinInfo *right = getRightCol(small,big);
+	RadixHashJoinInfo *left  = small->isLeft ? small : big;
+	RadixHashJoinInfo *right = small->isLeft ? big : small;
 
 	// Add values from left column's tuple
 	if(left->isSmall)
-		t = getTuple(left->sorted->tuples,actualRow);
+		t = &left->sorted->tuples->table[actualRow*left->sorted->tuples->tupleSize];
 	else
-		t = getTuple(left->sorted->tuples,i);
+		t = &left->sorted->tuples->table[i*left->sorted->tuples->tupleSize];
 
 	for(unsigned i=0;i<left->tupleSize;++i)
 		target[k++] = t[i];
 
 	// Add values from right column's tuple
 	if(right->isSmall)
-		t = getTuple(right->sorted->tuples,actualRow);
+		t = &right->sorted->tuples->table[actualRow*right->sorted->tuples->tupleSize];
 	else
-		t = getTuple(right->sorted->tuples,i);
+		t = &right->sorted->tuples->table[i*right->sorted->tuples->tupleSize];
 
 	for(unsigned i=0;i<right->tupleSize;++i)
 		target[k++] = t[i];
-}
-
-RadixHashJoinInfo *getLeftCol(RadixHashJoinInfo *i1,RadixHashJoinInfo *i2)
-{
-	return i1->isLeft ? i1 : i2;
-}
-
-RadixHashJoinInfo *getRightCol(RadixHashJoinInfo *i1,RadixHashJoinInfo *i2)
-{
-	return i1->isLeft ? i2 : i1;
 }

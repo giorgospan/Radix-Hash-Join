@@ -30,7 +30,7 @@ void insertAtVector(struct Vector *vector,unsigned *tuple)
 	if(isEmpty(vector))
 	{
 		/* Starting with 10 tuples */
-		vector->capacity = 1000000*vector->tupleSize;
+		vector->capacity = 500000*vector->tupleSize;
 		vector->table    = allocate(vector->capacity*sizeof(unsigned),"insertAtVector");
 	}
 
@@ -100,10 +100,9 @@ void scanColEquality(struct Vector *new,struct Vector* old,uint64_t *leftCol,uin
 {
 	/* Note: Each tuple in old vector contains one rowId */
 	/* Except for the case of join between relations from the same intermediate entity[i.e: vector] */
-	for(unsigned i=0;i<old->nextPos;++i)
-		if(i%old->tupleSize==0)
-			if(leftCol[old->table[i+posLeft]] == rightCol[old->table[i+posRight]])
-				insertAtVector(new,&old->table[i]);
+	for(unsigned i=0;i<old->nextPos;i+=old->tupleSize)
+		if(leftCol[old->table[i+posLeft]] == rightCol[old->table[i+posRight]])
+			insertAtVector(new,&old->table[i]);
 }
 
 void scanFilter(struct Vector *new,struct Vector* old,uint64_t *col,Comparison cmp,uint64_t constant)
@@ -116,32 +115,31 @@ void scanFilter(struct Vector *new,struct Vector* old,uint64_t *col,Comparison c
 }
 
 // Fill info with values and tuples
-void scanJoin(RadixHashJoinInfo *info,JoinArg *joinRel)
+void scanJoin(RadixHashJoinInfo *joinRel)
 {
 	struct Vector *old    = joinRel->vector;
-	struct Vector *new    = info->unsorted->tuples;
+	struct Vector *new    = joinRel->unsorted->tuples;
 
 	// Position of this relation's rowId inside tuple
 	unsigned tupleOffset  = joinRel->map[joinRel->relId];
 	
 	unsigned sizeOfVector = old->nextPos;
 	uint64_t *origValues  = joinRel->col;
-	uint64_t *colValues   = info->unsorted->values;
-	unsigned *rowIds      = info->unsorted->rowIds;
+	uint64_t *colValues   = joinRel->unsorted->values;
+	unsigned *rowIds      = joinRel->unsorted->rowIds;
 
 	unsigned k=0;
 	// We scan the old vector
-	for(unsigned i=0;i<sizeOfVector;++i)
-		if(i%old->tupleSize==0)
-		{
-			unsigned origRowId = old->table[i+tupleOffset];
-			// Add value
-			colValues[k]       = origValues[origRowId];
-			// Add tuple
-			insertAtVector(new,&old->table[i]);
-			// Add rowId
-			rowIds[k++]        = k;
-		}
+	for(unsigned i=0;i<sizeOfVector;i+=old->tupleSize)
+	{
+		unsigned origRowId = old->table[i+tupleOffset];
+		// Add value
+		colValues[k]       = origValues[origRowId];
+		// Add tuple
+		insertAtVector(new,&old->table[i]);
+		// Add rowId
+		rowIds[k++]        = k;
+	}
 }
 
 void destroyVector(struct Vector **vector)
@@ -189,8 +187,7 @@ unsigned getTupleSize(struct Vector *vector)
 uint64_t checkSum(struct Vector *vector,uint64_t *col,unsigned rowIdPos)
 {
 	uint64_t sum=0;
-	for(unsigned i=0;i<vector->nextPos;++i)
-		if(i%vector->tupleSize==0)
-			sum+=col[vector->table[i+rowIdPos]];
+	for(unsigned i=0;i<vector->nextPos;i+=vector->tupleSize)
+		sum+=col[vector->table[i+rowIdPos]];
 	return sum;
 }

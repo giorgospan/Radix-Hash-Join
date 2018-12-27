@@ -6,6 +6,7 @@
  */
 #include <stdio.h>
 #include "CUnit/Basic.h"
+#include "Intermediate.h"
 #include "Operations.h"
 #include "Partition.h"
 #include "Build.h"
@@ -17,15 +18,14 @@
  */
 void testPartition(void)
 {
-	RadixHashJoinInfo *info;
-	JoinArg arg;
+	RadixHashJoinInfo info;
 	uint64_t col[]  = {0u,1u,2u,3u,4u,5u,6u,7u,8u,9u,10u,
 						11u,12u,13u,14u,15u}; 
-	arg.isInInter   = 0;
-	arg.col         = col;
-	arg.tupleSize   = 1;
-	arg.numOfTuples = 16;
-	info            = partition(&arg);
+	info.isInInter   = 0;
+	info.col         = col;
+	info.tupleSize   = 1;
+	info.numOfTuples = 16;
+	partition(&info);
 	
 	/* 
 	 * HASH_FUN_1(col[i]) will be different for each col element. 
@@ -36,10 +36,9 @@ void testPartition(void)
 	 */	
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 	{
-		CU_ASSERT_EQUAL(1,info->hist[i]);
-		CU_ASSERT_EQUAL(i,info->pSum[i]);
+		CU_ASSERT_EQUAL(1,info.hist[i]);
+		CU_ASSERT_EQUAL(i,info.pSum[i]);
 	}
-	destroyRadixHashJoinInfo(info);
 }
 
 /**
@@ -47,51 +46,45 @@ void testPartition(void)
  */
 void testSortColumn(void)
 {
-	RadixHashJoinInfo *info;
-	JoinArg arg;
+	RadixHashJoinInfo info;
 	uint64_t col[]  = {15u,14u,13u,12u,11u,10u,9u,8u,7u,6u,5u,
 						4u,3u,2u,1u,0u}; 
-	arg.isInInter   = 0;
-	arg.col         = col;
-	arg.tupleSize   = 1;
-	arg.numOfTuples = 16;
-	info            = partition(&arg);
+	info.isInInter   = 0;
+	info.col         = col;
+	info.tupleSize   = 1;
+	info.numOfTuples = 16;
+	partition(&info);
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
-		CU_ASSERT_EQUAL(i,info->sorted->values[i]);
-	destroyRadixHashJoinInfo(info);
+		CU_ASSERT_EQUAL(i,info.sorted->values[i]);
 }
 
 void testBuildProbe(void)
 {
-	RadixHashJoinInfo *infoLeft,*infoRight;
-	JoinArg argLeft,argRight;
+	RadixHashJoinInfo infoLeft,infoRight;
 	uint64_t col1[]  = {0u,1u,2u,3u,4u,5u,6u,7u,8u,9u,10u,
 						11u,12u,13u,14u,15u};
 	uint64_t col2[]  = {22u,0u,2u,0u,6u};
 
-	argLeft.isInInter    = 0;
-	argLeft.col          = col1;
-	argLeft.numOfTuples  = 16;
-	argLeft.tupleSize    = 1;
+	infoLeft.isInInter    = 0;
+	infoLeft.col          = col1;
+	infoLeft.numOfTuples  = 16;
+	infoLeft.tupleSize    = 1;
 	
-	argRight.isInInter   = 0;
-	argRight.col         = col2;
-	argRight.numOfTuples = 5;
-	argRight.tupleSize   = 1;
-	infoLeft             = partition(&argLeft);
-	infoRight            = partition(&argRight);
+	infoRight.isInInter   = 0;
+	infoRight.col         = col2;
+	infoRight.numOfTuples = 5;
+	infoRight.tupleSize   = 1;
+	partition(&infoLeft);
+	partition(&infoRight);
 
-	build(infoLeft,infoRight);
+	build(&infoLeft,&infoRight);
 
 	struct Vector *result;
-	createVector(&result,argLeft.tupleSize+argRight.tupleSize);
-	probe(infoLeft,infoRight,result);
+	createVector(&result,infoLeft.tupleSize+infoRight.tupleSize);
+	probe(&infoLeft,&infoRight,result);
 
 	// If we apply join on those two columns, we get 4 <rowId1,rowId2> tuples
 	CU_ASSERT_EQUAL(4,getVectorTuples(result));
 
-	destroyRadixHashJoinInfo(infoLeft);
-	destroyRadixHashJoinInfo(infoRight);
 	destroyVector(&result);
-
 }
