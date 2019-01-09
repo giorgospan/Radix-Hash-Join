@@ -57,7 +57,7 @@ void initializeIndexArray(RadixHashJoinInfo *info)
 }
 
 void buildIndexPerBucket(RadixHashJoinInfo *info)
-{	
+{
 	unsigned i;
 	unsigned bucketSize;
 	uint64_t hash;

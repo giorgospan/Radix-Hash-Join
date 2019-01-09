@@ -26,6 +26,7 @@ static int set_nonblocking(int fd)
   if (flags < 0) return flags;
   return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
+
 //---------------------------------------------------------------------------
 static ssize_t read_bytes(int fd, void *buffer, size_t num_bytes)
 // Read a given number of bytes to the specified file descriptor
@@ -60,6 +61,7 @@ static ssize_t write_bytes(int fd, const void *buffer, size_t num_bytes)
 
   return num_bytes;
 }
+
 //---------------------------------------------------------------------------
 int main(int argc, char *argv[]) {
   // Check for the correct number of arguments
@@ -301,7 +303,7 @@ int main(int argc, char *argv[]) {
     cout << "=========================" << endl;
     return EXIT_SUCCESS;
   }
-
   return EXIT_FAILURE;
 }
+
 //---------------------------------------------------------------------------
