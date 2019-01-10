@@ -1,12 +1,15 @@
-#include "queue.h"
-#include "usefulHeaders.h"
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "Queue.h"
+#include "Utils.h"
 
-void createQueue(struct queue **q, int size)
+void createQueue(struct Queue **q, int size)
 {
 	/* Dynamic */
-	*q = malloc(sizeof(struct queue));
-	(*q)->array = malloc(sizeof(int) * size);
+	*q          = allocate(sizeof(struct Queue),"createQueue1");
+	(*q)->array = allocate(sizeof(int) * size,"createQueue2");
+
 
 	/* Data for ds */
 	(*q)->size = size;
@@ -14,37 +17,37 @@ void createQueue(struct queue **q, int size)
 	(*q)->rear = -1;
 
 	/* Valgrind warns of unintialized values should be removed */
-	for (int i = 0; i < size; i++)
-		(*q)->array[i] = 0;
+	// for (int i = 0; i < size; i++)
+	// 	(*q)->array[i] = 0;
 }
 
-void destroyQueue(struct queue *q)
+void destroyQueue(struct Queue *q)
 {
 	free(q->array);
 	free(q);
 }
 
-int enQueue(struct queue *q, int item)
+int enQueue(struct Queue *q, void* item)
 {
-	printf("item %d\n", item);
+	// fprintf(stderr,"item %p\n", item);
 	if ( ((q->rear == q->size - 1) && (q->front == 0)) || (q->rear == (q->front - 1) % (q->size - 1)) )
 	{
-		// display(q);	
+		// display(q);
 		fprintf(stderr, "%s\n", "Circular Queue is full");
 		return 0;
 	}
 	/* This is the first item inserted */
 	else if (q->front == -1)
 	{
-		q->rear = 0;
-		q->front = 0;
+		q->rear     = 0;
+		q->front    = 0;
 		q->array[0] = item;
 	}
 	/* When the rear has reached the end but there is still space in the array
 		we just move rear to the begining of the queue */
 	else if ( (q->rear == q->size - 1) && (q->front != 0))
 	{
-		q->rear = 0;
+		q->rear           = 0;
 		q->array[q->rear] = item;
 	}
 	/* just insert in the next position */
@@ -52,8 +55,11 @@ int enQueue(struct queue *q, int item)
 		q->array[++(q->rear)] = item;
 }
 
+int isEmpty(struct Queue *q){
+	return (q->front == -1);
+}
 
-int deQueue(struct queue *q)
+void* deQueue(struct Queue *q)
 {
 	if (q->front == -1)
 	{
@@ -61,7 +67,7 @@ int deQueue(struct queue *q)
 		return 0;
 	}
 
-	int value = q->array[q->front];
+	void* value = q->array[q->front];
 
 	/* We had an one item queue if this is true */
 	if (q->front == q->rear)
@@ -77,13 +83,13 @@ int deQueue(struct queue *q)
 }
 
 
-void display(struct queue *q)
+void display(struct Queue *q)
 {
 	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-	printf("front is :%d \n", q->front);
-	printf("rear is :%d \n", q->rear);
+	fprintf(stderr,"front is :%d \n", q->front);
+	fprintf(stderr,"rear is :%d \n", q->rear);
 	for (int i = 0; i < q->size; i++)
-		printf("%d| ", q->array[i]);
-	printf("\n");
-	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		fprintf(stderr,"%p| ", q->array[i]);
+	fprintf(stderr,"\n");
+	fprintf(stderr,"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 }

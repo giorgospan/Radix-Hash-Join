@@ -67,7 +67,7 @@ void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *resul
 		checkEqual(small,big,i,start,searchValue,k,results,tupleToInsert);
 
 		while(1)
-		{	
+		{
 			// We've reached the end of the chain
 			if(searchIndex->chainArray[k] == 0)
 				break;
@@ -89,16 +89,16 @@ void checkEqual(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned i,unsig
 	uint32_t actualRow;
 	/* We calculate the rowId relevant to the sorted array [i.e: 0 ~> numOfTuples] */
 	actualRow = start + pseudoRow;
-	
+
 	/*
 	 * Check equality and insert tuple into results vector
-	 * The new tuple is constructed by combining the tuple of each relation. 
+	 * The new tuple is constructed by combining the tuple of each relation.
 	 */
 	if(small->sorted->values[actualRow] == searchValue)
 	{
 		constructTuple(small,big,actualRow,i,tupleToInsert);
 		insertAtVector(results,tupleToInsert);
-		
+
 	}
 }
 
@@ -107,11 +107,11 @@ void constructTuple(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned act
 {
 	/**
 	 * We need to construct the tuple that we're gonna add in the results vector
-	 * 
+	 *
 	 * First,we add left column's tuple [it is important to add left column's tuple first]
 	 * Then,we add right column's tuple.
-	 * 
-	 * Notice that we need to access different row depending on 
+	 *
+	 * Notice that we need to access different row depending on
 	 * whether the column is small or big [i.e: indexed or not]
 	 */
 	unsigned *t;

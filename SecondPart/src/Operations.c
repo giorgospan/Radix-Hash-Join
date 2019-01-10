@@ -12,7 +12,7 @@
 #include "Probe.h"
 
 void colEquality(uint64_t *leftCol,uint64_t *rightCol,unsigned numOfTuples,struct Vector **vector)
-{	
+{
 	/* Create the vector that will hold the results */
 	/* 1 stands for: "1 rowId per tuple" -- we do not join relations in this function */
 	createVector(vector,1);
@@ -80,8 +80,7 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
 	probe(left,right,result);
-	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
-	// printVector(result);
+	//fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
 
 	// Update mapRels and interResults //
 
@@ -92,7 +91,7 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 
 	newMap[left->relId]  = 0;
 	newMap[right->relId] = 1;
-	
+
 	// Free the old map arrays | Destroy the old vectors
 	free(*left->ptrToMap);
 	*left->ptrToMap = NULL;
@@ -101,7 +100,7 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	destroyVector(left->ptrToVec);
 	destroyVector(right->ptrToVec);
 
-	// Attach the new ones to first available position 
+	// Attach the new ones to first available position
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
@@ -123,14 +122,13 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
 	probe(left,right,result);
-	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
-	// printVector(result);
+	// fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
 
 	// Update mapRels and interResults //
 
 	// Construct new mapping
 	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinNonInterInter");
-	
+
 	newMap[left->relId] = 0;
 	for(unsigned i=0;i<inter->queryRelations;++i)
 		if(i!=left->relId)
@@ -144,7 +142,7 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	destroyVector(left->ptrToVec);
 	destroyVector(right->ptrToVec);
 
-	// Attach the new ones to first available position 
+	// Attach the new ones to first available position
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
@@ -165,8 +163,7 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
 	probe(left,right,result);
-	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
-	// printVector(result);
+	// fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
 
 	// Update mapRels and interResults //
 
@@ -175,7 +172,7 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 
 	for(unsigned i=0;i<inter->queryRelations;++i)
 		newMap[i] = left->map[i];
-	newMap[right->relId] = left->tupleSize;	
+	newMap[right->relId] = left->tupleSize;
 
 	// Free the old map arrays | Destroy the old vectors
 	free(*left->ptrToMap);
@@ -185,12 +182,13 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	destroyVector(left->ptrToVec);
 	destroyVector(right->ptrToVec);
 
-	// Attach the new ones to first available position 
+	// Attach the new ones to first available position
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
+
 }
 
 void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHashJoinInfo* right)
@@ -214,8 +212,7 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 	struct Vector *result;
 	createVector(&result,left->tupleSize+right->tupleSize);
 	probe(left,right,result);
-	// printf("Results vector with %u tuples with %u rowIds in each tuple\n",getVectorTuples(result),getTupleSize(result));
-	// printVector(result);
+	//fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
 
 	// Update mapRels and interResults //
 
@@ -236,7 +233,7 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 	destroyVector(left->ptrToVec);
 	destroyVector(right->ptrToVec);
 
-	// Attach the new ones to first available position 
+	// Attach the new ones to first available position
 	unsigned pos             = getFirstAvailablePos(inter);
 	inter->mapRels[pos]      = newMap;
 	inter->interResults[pos] = result;

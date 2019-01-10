@@ -12,10 +12,10 @@ struct Vector
 
 	/* Size of tuple (i.e: rowids per tuple) */
 	unsigned tupleSize;
-	
-	/* Position where the next tuple will be inserted 
+
+	/* Position where the next tuple will be inserted
 	 * This member also acts as a counter for the vector elements
-	 * i.e:for the rowIds stored in the vector 
+	 * i.e:for the rowIds stored in the vector
 	 */
 	unsigned nextPos;
 
@@ -51,11 +51,13 @@ void scanColEquality(struct Vector *new,struct Vector* old,uint64_t *leftCol,uin
 void scanFilter(struct Vector *new,struct Vector* old,uint64_t *col,Comparison cmp,uint64_t constant);
 void scanJoin(RadixHashJoinInfo *joinRel);
 
-int isFull(struct Vector *vector);
-int isEmpty(struct Vector *vector);
+int vectorIsFull(struct Vector *vector);
+int vectorIsEmpty(struct Vector *vector);
 
+void resetVector(struct Vector *vector,unsigned newTupleSize);
 void printVector(struct Vector *vector);
 void printTuple(struct Vector *vector,unsigned pos);
 uint64_t checkSum(struct Vector *vector,uint64_t *col,unsigned rowIdPos);
+
 
 #endif

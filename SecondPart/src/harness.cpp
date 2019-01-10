@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
         output.append(buffer, bytes);
       }
 
-      // Feed another chunk of data from this batch to the test program
+      // Feed another histogram of data from this batch to the test program
       if (FD_ISSET(stdin_pipe[1], &write_fd)) {
         int bytes =
             write(stdin_pipe[1], input_batches[batch].data() + input_ofs, input_batches[batch].length() - input_ofs);

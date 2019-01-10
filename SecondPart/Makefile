@@ -22,7 +22,7 @@ CC      := gcc
 CFLAGS  := -O3 -g -I $(INCDIR)  # -O3 for even more compiler optimization
 
 #############################################################
-# Build harness Driver 
+# Build harness Driver
 all: $(BUILDDIR)/harness $(BUILDDIR)/$(TARGET)
 
 # all: clean $(BUILDDIR)/$(TARGET)
@@ -33,10 +33,10 @@ all: $(BUILDDIR)/harness $(BUILDDIR)/$(TARGET)
 
 # create executable [by linking object files]
 $(BUILDDIR)/$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $(OBJECTS) 
+	$(CC) $(CFLAGS) -o $@ $(OBJECTS) -lpthread
 
 # create object files
-$(OBJECTS): ./%.o : $(SRCDIR)/%.c 
+$(OBJECTS): ./%.o : $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #############################################################
@@ -52,12 +52,12 @@ $(BUILDDIR)/harness: ./harness.o
 #############################################################
 
 # note that we discard the main function of our program.
-# that is because we want to use the main function that we 
+# that is because we want to use the main function that we
 # have in TESTDIR
 unittest: $(TESTOBJS) $(filter-out ./main.o, ./$(OBJECTS))
 	$(CC) $(CFLAGS) -o $@ $^ -lcunit
 
-$(TESTOBJS): ./%.o : $(TESTDIR)/%.c 
+$(TESTOBJS): ./%.o : $(TESTDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
@@ -66,10 +66,10 @@ $(TESTOBJS): ./%.o : $(TESTDIR)/%.c
 # clean up
 .PHONY: clean
 clean:
-	@rm -f harness.o $(OBJECTS) $(TESTOBJS) $(BUILDDIR)/* ./dumpFiles/* unittest ./workloads/small/call*
+	@rm -f harness.o $(OBJECTS) $(TESTOBJS) $(BUILDDIR)/* ./dumpFiles/* unittest ./workloads/small/call* ./workloads/small/massif*
 	@echo "Cleanup complete!"
 
-# count 
+# count
 .PHONY: count
 count:
 	@wc $(SOURCES) $(INCLUDES) $(TESTS)

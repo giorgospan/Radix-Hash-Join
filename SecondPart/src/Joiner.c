@@ -8,6 +8,9 @@
 #include "Intermediate.h"
 #include "Utils.h"
 
+unsigned RADIX_BITS;
+unsigned HASH_RANGE_1;
+
 void createJoiner(struct Joiner **joiner)
 {
 	*joiner = allocate(sizeof(struct Joiner),"createJoiner");
@@ -20,10 +23,10 @@ void setup(struct Joiner *joiner)
 	/* Contains all file names : "r0\nr1\nr2\n....r20\n" */
 	char *buffer   = allocate(BUFFERSIZE*sizeof(char),"setup(..)-buffer");
 	char *allNames = buffer;
-	
+
 	/* We assume that file name will be at most 18[do not forget '\n' and '\0'] characters long */
 	char fileName[20];
-	
+
 	/* Get number of relations and store file names to allNames */
 	allNames[0] = '\0';
 	while (fgets(fileName, sizeof(fileName), stdin) != NULL)
@@ -31,7 +34,7 @@ void setup(struct Joiner *joiner)
 		if(!strcmp(fileName,"Done\n"))
 			break;
 		++joiner->numOfRelations;
-		strcat(allNames,fileName);		
+		strcat(allNames,fileName);
 	}
 
 	/* Allocate space to store relations */
@@ -44,11 +47,12 @@ void setup(struct Joiner *joiner)
 		addRelation(joiner,fileName);
 		allNames+=offset;
 	}
+	setRadixBits(joiner);
 	free(buffer);
 }
 
 void addRelation(struct Joiner *joiner,char *fileName)
-{	
+{
 
 	/* Indicates the number of relations added so far */
 	static unsigned i=0;
@@ -67,32 +71,32 @@ void join(struct Joiner *joiner,struct QueryInfo *q)
 	struct InterMetaData *inter;
 	createInterMetaData(&inter,q);
 
-	// printf("=========================================================\n");
-	// printf("Column Equalities\n");
-	// printf("=========================================================\n");
+	// fprintf(stderr,"=========================================================\n");
+	// fprintf(stderr,"Column Equalities\n");
+	// fprintf(stderr,"=========================================================\n");
 	applyColumnEqualities(inter,joiner,q);
-	
-	// printf("=========================================================\n");
-	// printf("Filters\n");
-	// printf("=========================================================\n");
+
+	// fprintf(stderr,"=========================================================\n");
+	// fprintf(stderr,"Filters\n");
+	// fprintf(stderr,"=========================================================\n");
 	applyFilters(inter,joiner,q);
 
-	// printf("=========================================================\n");
-	// printf("Joins\n");
-	// printf("=========================================================\n");
+	// fprintf(stderr,"=========================================================\n");
+	// fprintf(stderr,"Joins\n");
+	// fprintf(stderr,"=========================================================\n");
 	applyJoins(inter,joiner,q);
 
 
-	// printf("=========================================================\n");
-	// printf("CheckSums\n");
-	// printf("=========================================================\n");
+	// fprintf(stderr,"=========================================================\n");
+	// fprintf(stderr,"CheckSums\n");
+	// fprintf(stderr,"=========================================================\n");
 	applyCheckSums(inter,joiner,q);
 
 
-	// printf("=========================================================\n");
-	// printf("Destruction\n");
-	// printf("=========================================================\n");
-	destroyInterMetaData(inter);	
+	// fprintf(stderr,"=========================================================\n");
+	// fprintf(stderr,"Destruction\n");
+	// fprintf(stderr,"=========================================================\n");
+	destroyInterMetaData(inter);
 }
 
 uint64_t *getColumn(struct Joiner *joiner,unsigned relId,unsigned colId)
@@ -105,6 +109,33 @@ unsigned getRelationTuples(struct Joiner *joiner,unsigned relId)
 	return joiner->relations[relId]->numOfTuples;
 }
 
+void setRadixBits(struct Joiner *joiner)
+{
+	unsigned sum            = 0;
+	unsigned avgNumOfTuples = 0;
+	for(unsigned i=0;i<joiner->numOfRelations;++i)
+		sum+=joiner->relations[i]->numOfTuples;
+	avgNumOfTuples = sum/joiner->numOfRelations;
+
+	/**
+	 * small	: 4,16
+	 * medium	: 5,32
+	 * large	: 5,32
+	 * public	: 8,256
+	 */
+
+	 if (avgNumOfTuples<500000) {
+	 	RADIX_BITS   = 4;
+		HASH_RANGE_1 = 16;
+	} else if (avgNumOfTuples<2000000) {
+		RADIX_BITS   = 5;
+		HASH_RANGE_1 = 32;
+	 } else {
+		RADIX_BITS   = 8;
+ 		HASH_RANGE_1 = 256;
+	 }
+}
+
 void destroyJoiner(struct Joiner *joiner)
 {
 	for (unsigned i=0;i<joiner->numOfRelations;++i)
@@ -112,4 +143,3 @@ void destroyJoiner(struct Joiner *joiner)
 	free(joiner->relations);
 	free(joiner);
 }
-

@@ -1,9 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include "usefulHeaders.h"
-
-struct queue
+struct Queue
 {
 	/* Start and end of queue */
 	int front;
@@ -11,23 +9,25 @@ struct queue
 
 	/* Fixed size of array */
 	int size;
-	int *array;
+	void **array;
 };
 
 /* Creates the queue */
-void createQueue(struct queue **q, int size);
+void createQueue(struct Queue **q, int size);
 
 /* Free the allocated memory of the data structure */
-void destroyQueue(struct queue *q);
+void destroyQueue(struct Queue *q);
 
 /* enQueue an item returns 1 on success */
-int enQueue(struct queue *q, int item);
+int enQueue(struct Queue *q, void* item);
 
 /* always extract from front  returns item on success */
-int deQueue(struct queue *q);
+void* deQueue(struct Queue *q);
+
+int isEmpty(struct Queue *q);
 
 /* display queue and front and rear */
-void display(struct queue *q);
+void display(struct Queue *q);
 
 
 #endif

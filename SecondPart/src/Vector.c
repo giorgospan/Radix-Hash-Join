@@ -24,21 +24,25 @@ void createVectorFixedSize(struct Vector **vector,unsigned tupleSize,unsigned fi
 	(*vector)->nextPos   = 0;
 }
 
+void resetVector(struct Vector *vector,unsigned newTupleSize){
+	vector->nextPos   = 0;
+	vector->tupleSize = newTupleSize;
+}
+
 void insertAtVector(struct Vector *vector,unsigned *tuple)
 {
 	/* If vector is empty , create table */
-	if(isEmpty(vector))
+	if(vectorIsEmpty(vector))
 	{
-		/* Starting with 10 tuples */
+		/* Starting with 500000 tuples */
 		vector->capacity = 500000*vector->tupleSize;
 		vector->table    = allocate(vector->capacity*sizeof(unsigned),"insertAtVector");
 	}
 
 	/* Else if vector is full, reallocate more space */
-	else if(isFull(vector))
+	else if(vectorIsFull(vector))
 	{
 		vector->capacity*=2;
-		// vector->capacity+=5*vector->tupleSize;
 		unsigned *new   = realloc(vector->table,vector->capacity*sizeof(unsigned));
 		if(!new)
 		{
@@ -46,6 +50,7 @@ void insertAtVector(struct Vector *vector,unsigned *tuple)
 			exit(EXIT_FAILURE);
 		}
 		vector->table    = new;
+		// fprintf(stderr, "realloc() has been called\n");
 	}
 
 	/* Insert tuple */
@@ -86,7 +91,7 @@ void printVector(struct Vector *vector)
 }
 
 void printTuple(struct Vector *vector,unsigned pos)
-{	
+{
 	printf("(");
 	for(unsigned i=0;i<vector->tupleSize;++i)
 		if(i==vector->tupleSize-1)
@@ -122,7 +127,7 @@ void scanJoin(RadixHashJoinInfo *joinRel)
 
 	// Position of this relation's rowId inside tuple
 	unsigned tupleOffset  = joinRel->map[joinRel->relId];
-	
+
 	unsigned sizeOfVector = old->nextPos;
 	uint64_t *origValues  = joinRel->col;
 	uint64_t *colValues   = joinRel->unsorted->values;
@@ -154,12 +159,12 @@ void destroyVector(struct Vector **vector)
 	*vector = NULL;
 }
 
-int isFull(struct Vector *vector)
+int vectorIsFull(struct Vector *vector)
 {
 	return vector->nextPos == vector->capacity;
 }
 
-int isEmpty(struct Vector *vector)
+int vectorIsEmpty(struct Vector *vector)
 {
 	return vector->table == NULL;
 }

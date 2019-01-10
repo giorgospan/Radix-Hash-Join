@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h> /*sleep()--debugging*/
 
 #include "Build.h"
@@ -42,9 +43,11 @@ void initializeIndexArray(RadixHashJoinInfo *info)
 			/* Allocate space for bucket's index */
 			info->indexArray[i] = allocate(sizeof(struct Index),"initializeIndexArray2");
 
+
 			/* Allocate space for index's fields */
  			info->indexArray[i]->chainArray  = allocate(bucketSize*sizeof(unsigned),"initializeIndexArray3");
 			info->indexArray[i]->bucketArray = allocate(HASH_RANGE_2*sizeof(unsigned),"initializeIndexArray4");
+
 
 			/* Initialize chainArray and bucketArray with 0's */
 			for(j=0;j<bucketSize;j++)
@@ -80,19 +83,19 @@ void buildIndexPerBucket(RadixHashJoinInfo *info)
 			// Remember: hist is array with ints
 			bucketSize = info->hist[i];
 
-			// printf("[%u]bucketSize:%u\n",i,bucketSize);
+			// fprintf(stderr,"[%u]bucketSize:%u\n",i,bucketSize);
 
 			/* Scan from the bottom of the bucket to the top */
 			for(j=start+bucketSize-1;j>=start;j--)
 			{
 				hash = HASH_FUN_2(info->sorted->values[j]);
-				// printf("\nsecondHash(%lu): %lu\n",info->sorted->values[j],hash);
+				// fprintf(stderr,"\nsecondHash(%lu): %lu\n",info->sorted->values[j],hash);
 
 				if(info->indexArray[i]->bucketArray[hash] == 0)
 				{
-					// printf("Found empty spot in bucketArray\n");
+					// fprintf(stderr,"Found empty spot in bucketArray\n");
 					info->indexArray[i]->bucketArray[hash] = (j-start)+1;
-					// printf("bucketArray[%lu]: %u\n",hash,  info->indexArray[i]->bucketArray[hash] );
+					// fprintf(stderr,"bucketArray[%lu]: %u\n",hash,  info->indexArray[i]->bucketArray[hash] );
 				}
 				else
 				{
@@ -106,28 +109,28 @@ void buildIndexPerBucket(RadixHashJoinInfo *info)
 			}
 		}
 		// else
-		// 	printf("Empty bucket\n");
-		// printf("==============================================\n");
+		// 	fprintf(stderr,"Empty bucket\n");
+		// fprintf(stderr,"==============================================\n");
 	}
 }
 
 void traverseChain(unsigned chainPos,unsigned* chainArray,unsigned posToBeStored)
 {
-	// printf("Moving to chainArray[%u](now is equal to %u)\n",chainPos,chainArray[chainPos]);
+	// fprintf(stderr,"Moving to chainArray[%u](now is equal to %u)\n",chainPos,chainArray[chainPos]);
 	while(1)
 	{
 		// We've found an empty spot in chainArray
 		if(chainArray[chainPos] == 0)
 		{
 			chainArray[chainPos] = posToBeStored;
-			// printf("Found empty spot on chainArray[%u]\n",chainPos);
+			// fprintf(stderr,"Found empty spot on chainArray[%u]\n",chainPos);
 			break;
 		}
 		/* Step further on the chain */
 		else
 		{
 			chainPos = chainArray[chainPos] - 1;
-			// printf("Moving to chainArray[%u](now is equal to %u)\n",chainPos,chainArray[chainPos]);
+			// fprintf(stderr,"Moving to chainArray[%u](now is equal to %u)\n",chainPos,chainArray[chainPos]);
 			// sleep(1);
 		}
 	}

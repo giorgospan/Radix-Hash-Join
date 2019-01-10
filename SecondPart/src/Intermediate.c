@@ -17,9 +17,9 @@ void createInterMetaData(struct InterMetaData **inter,struct QueryInfo *q)
 	(*inter)->interResults    = allocate((*inter)->maxNumOfVectors*sizeof(struct Vector*),"createInterMetaData-2nd");
 	(*inter)->mapRels         = allocate((*inter)->maxNumOfVectors*sizeof(unsigned*),"createInterMetaData-3rd");
 	(*inter)->queryRelations  = getNumOfRelations(q);
-	
+
 	for(unsigned i=0;i<(*inter)->maxNumOfVectors;++i){
-		(*inter)->interResults[i] = NULL;	
+		(*inter)->interResults[i] = NULL;
 		(*inter)->mapRels[i]      = NULL;
 	}
 }
@@ -45,7 +45,7 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 				// printf("%u.%u=%u.%u [r%u.tbl]\n",relId,leftColId,relId,rightColId,original);
 				colEqualityInter(leftCol,rightCol,0,0,vector);
 			}
-			else 
+			else
 			{
 				// printf("%u.%u=%u.%u [r%u.tbl]\n",relId,leftColId,relId,rightColId,original);
 				unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyColumnEqualities");
@@ -56,7 +56,7 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 				colEquality(leftCol,rightCol,numOfTuples,vector);
 			}
 			// printf("\n\n");
-		}	
+		}
 }
 
 void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct QueryInfo *q)
@@ -74,12 +74,12 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 		uint64_t *col          = getColumn(joiner,original,colId);
 		if(isInInter(*vector))
 		{
-			// printf("%u.%u%c%lu [r%u.tbl]\n\n",relId,colId,cmp,constant,original);
+			// fprintf(stderr,"%u.%u%c%lu [r%u.tbl]\n\n",relId,colId,cmp,constant,original);
 			filterInter(col,cmp,constant,vector);
 		}
 		else
 		{
-			// printf("%u.%u%c%lu [r%u.tbl]\n\n",relId,colId,cmp,constant,original);
+			// fprintf(stderr,"%u.%u%c%lu [r%u.tbl]\n\n",relId,colId,cmp,constant,original);
 			unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyColumnEqualities");
 			for(unsigned i=0;i<inter->queryRelations;++i)
 				values[i] = (i==relId) ? 0 : -1;
@@ -87,7 +87,10 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 			free(values);
 			filter(col,cmp,constant,numOfTuples,vector);
 		}
-		// printf("\n\n");
+		// for(unsigned i=0;i<inter->queryRelations;++i){
+		// 	fprintf(stderr, "map[%u][%u]:%u\n",pos,i,inter->mapRels[pos][i]);
+		// }
+		// fprintf(stderr,"\n\n");
 	}
 }
 
@@ -112,11 +115,11 @@ void applyProperJoin(struct InterMetaData *inter,RadixHashJoinInfo* argLeft,Radi
 	case 0:
 		switch(argRight->isInInter){
 			case 0:
-				// printf("joinNonInterNonInter()\n");
+				// fprintf(stderr, "joinNonInterNonInter()\n");
 				joinNonInterNonInter(inter,argLeft,argRight);
 				break;
 			case 1:
-				// printf("joinNonInterInter()\n");
+				// fprintf(stderr, "joinNonInterInter()\n");
 				joinNonInterInter(inter,argLeft,argRight);
 				break;
 		}
@@ -124,11 +127,11 @@ void applyProperJoin(struct InterMetaData *inter,RadixHashJoinInfo* argLeft,Radi
 	case 1:
 		switch(argRight->isInInter){
 			case 0:
-				// printf("joinInterNonInter()\n");
+				// fprintf(stderr, "joinInterNonInter()\n");
 				joinInterNonInter(inter,argLeft,argRight);
 				break;
 			case 1:
-				// printf("joinInterInter()\n");
+				// fprintf(stderr, "joinInterInter()\n");
 				joinInterInter(inter,argLeft,argRight);
 				break;
 		}
@@ -183,7 +186,7 @@ void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct Que
 }
 
 void printCheckSum(uint64_t checkSum,unsigned isLast)
-{	
+{
 	char string[100];
 	if(checkSum)
 		sprintf(string,"%lu",checkSum);
@@ -192,11 +195,15 @@ void printCheckSum(uint64_t checkSum,unsigned isLast)
 
 	if(isLast)
 	{
+		// fprintf(stderr,"%s\n",string);
 		printf("%s\n",string);
 		fflush(stdout);
-	}	
+	}
 	else
+	{
+		// fprintf(stderr,"%s ",string);
 		printf("%s ",string);
+	}
 }
 
 void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg)

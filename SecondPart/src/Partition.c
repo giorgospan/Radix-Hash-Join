@@ -1,5 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <string.h>/* strerror() */
+#include <errno.h>/* errno */
 
 #include "Partition.h"
 #include "Intermediate.h"
@@ -21,6 +24,7 @@ void partition(RadixHashJoinInfo *info)
 
 	// Create Histogram
 	info->hist = allocate(HASH_RANGE_1*sizeof(unsigned),"partition5");
+
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		info->hist[i] = 0;
 
@@ -51,11 +55,13 @@ void sortColumn(RadixHashJoinInfo *info)
 	info->sorted         = allocate(sizeof(ColumnInfo),"sortColumn1");
 	info->sorted->values = allocate(info->numOfTuples*sizeof(uint64_t),"sortColumn2");
 	info->sorted->rowIds = allocate(info->numOfTuples*sizeof(unsigned),"sortColumn3");
-	unsigned *pSumCopy   = copyPsum(info->pSum);
+	unsigned *pSumCopy   = allocate(HASH_RANGE_1*sizeof(unsigned),"sortColumn4");
+	memcpy(pSumCopy,info->pSum,HASH_RANGE_1*sizeof(unsigned));
+
 	createVectorFixedSize(&info->sorted->tuples,info->tupleSize,info->numOfTuples);
 
 	for(unsigned i=0;i<info->numOfTuples;++i)
-	{	
+	{
 		/* Get the hashValue from unsorted column */
 		unsigned h;
 		if(info->isInInter)
@@ -87,12 +93,4 @@ void sortColumn(RadixHashJoinInfo *info)
 		}
 	}
 	free(pSumCopy);
-}
-
-unsigned *copyPsum(unsigned *original)
-{
-	unsigned *pSumCopy = allocate(HASH_RANGE_1*sizeof(unsigned),"copyPsum");
-	for(unsigned i=0;i<HASH_RANGE_1;++i)
-		pSumCopy[i] = original[i];
-	return pSumCopy;
 }
