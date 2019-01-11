@@ -6,6 +6,7 @@
 #include "Joiner.h"
 #include "Relation.h"
 #include "Intermediate.h"
+#include "Vector.h"
 #include "Utils.h"
 
 unsigned RADIX_BITS;
@@ -48,6 +49,7 @@ void setup(struct Joiner *joiner)
 		allNames+=offset;
 	}
 	setRadixBits(joiner);
+ 	setVectorInitSize(joiner);
 	free(buffer);
 }
 
@@ -109,6 +111,31 @@ unsigned getRelationTuples(struct Joiner *joiner,unsigned relId)
 	return joiner->relations[relId]->numOfTuples;
 }
 
+void setVectorInitSize(struct Joiner *joiner)
+{
+	/**
+	 * small	: 1000
+	 * medium	: 1000
+	 * large	: 5000
+	 * public	: 500000
+	 */
+
+	unsigned sum            = 0;
+	unsigned avgNumOfTuples = 0;
+	for(unsigned i=0;i<joiner->numOfRelations;++i)
+		sum+=joiner->relations[i]->numOfTuples;
+	avgNumOfTuples = sum/joiner->numOfRelations;
+
+	if(avgNumOfTuples<500000)
+		initSize = 1000;
+	else if(avgNumOfTuples<1200000)
+		initSize = 1000;
+	else if(avgNumOfTuples<2000000)
+		initSize = 5000;
+	else
+		initSize = 500000;
+}
+
 void setRadixBits(struct Joiner *joiner)
 {
 	unsigned sum            = 0;
@@ -125,14 +152,14 @@ void setRadixBits(struct Joiner *joiner)
 	 */
 
 	 if (avgNumOfTuples<500000) {
-	 	RADIX_BITS   = 4;
-		HASH_RANGE_1 = 16;
+		 	RADIX_BITS   = 4;
+			HASH_RANGE_1 = 16;
 	} else if (avgNumOfTuples<2000000) {
-		RADIX_BITS   = 5;
-		HASH_RANGE_1 = 32;
+			RADIX_BITS   = 5;
+			HASH_RANGE_1 = 32;
 	 } else {
-		RADIX_BITS   = 8;
- 		HASH_RANGE_1 = 256;
+			RADIX_BITS   = 8;
+			HASH_RANGE_1 = 256;
 	 }
 }
 

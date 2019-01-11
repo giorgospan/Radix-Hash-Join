@@ -5,6 +5,8 @@
 #include "Utils.h" /*Comparison type*/
 #include "Intermediate.h" /*RadixHashJoinInfo type*/
 
+extern unsigned initSize;
+
 struct Vector
 {
 	/* Table with tuples */

@@ -6,6 +6,11 @@
 #include "Partition.h"
 #include "Utils.h"
 
+void buildFunc(void* arg)
+{
+
+}
+
 void build(RadixHashJoinInfo *infoLeft,RadixHashJoinInfo *infoRight)
 {
 	RadixHashJoinInfo *big,*small;

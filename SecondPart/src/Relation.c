@@ -60,7 +60,7 @@ void loadRelation(struct Relation *rel,char *fileName)
 	rel->columns = allocate(rel->numOfCols*sizeof(uint64_t*),"loadRelation-columns array");
 
 	/* Map every relation's column to rel->columns array */
-	for (unsigned i=0;i<rel->numOfCols;++i) 
+	for (unsigned i=0;i<rel->numOfCols;++i)
 	{
 		rel->columns[i] = (uint64_t*) addr;
 		addr+=rel->numOfTuples*sizeof(uint64_t);
@@ -88,9 +88,9 @@ void dumpRelation(struct Relation *rel,char *fileName)
 	{
 		for(unsigned j=0;j<rel->numOfCols;++j)
 			fprintf(fp,"%lu|", rel->columns[j][i]);
-		fprintf(fp,"\n");		
+		fprintf(fp,"\n");
 	}
-	fclose(fp); 
+	fclose(fp);
 }
 
 void printRelation(struct Relation *rel)
@@ -99,14 +99,14 @@ void printRelation(struct Relation *rel)
 	{
 		for(unsigned j=0;j<rel->numOfCols;++j)
 			printf("%lu|", rel->columns[j][i]);
-		printf("\n");		
-	} 
+		printf("\n");
+	}
 }
 
 void destroyRelation(struct Relation *rel)
 {
 	/**
-	 * It is recommened to call munmap(...) but the process is going 
+	 * It is recommened to call munmap(...) but the process is going
 	 * to terminate anyway afterwards.
 	 */
 	free(rel->columns);

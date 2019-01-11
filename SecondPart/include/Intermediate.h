@@ -6,20 +6,26 @@
 
 struct InterMetaData
 {
-	/* Array of vectors: Each vector will be an "intermediate" entity */
-	struct Vector **interResults;
 	/**
-	 * Array of arrays: One array per interResult vector.
+	 * Array arrays of vectors: Each vector-array will be an "intermediate" entity
+	 * We need one array of vectors per "intermediate" entity because we'll be computing
+	 * the intermediate result using many jobs, not just one. Those jobs will be served
+	 * by our threads.
+	 */
+	struct Vector ***interResults;
+
+	/**
+	 * Array of arrays: One array per interResult .
 	 * Each array will be of size "queryRelations"
-	 * It is actually a  mapping between a relation and where its rowIds are placed inside the tuple 
+	 * It is actually a  mapping between a relation and where its rowIds are placed inside the tuple
 	 * E.g: mapRels[0][1] = 2    means: 0-th vector will contain tuples of the following format:
-	 * 
-	 * <rowIdX,rowIdY,rowId1,...> , where X,Y are ids of the joined relations 
-	 * 0-th rowId inside tuple is from relation X, 
-	 * 1-st rowId inside tuple is from relation Y, 
+	 *
+	 * <rowIdX,rowIdY,rowId1,...> , where X,Y are ids of the joined relations
+	 * 0-th rowId inside tuple is from relation X,
+	 * 1-st rowId inside tuple is from relation Y,
 	 * 2-nd rowId inside tuple is from relation 1,
 	 * e.t.c
-	 * 
+	 *
 	 * In general : mapRels[..][relId] = tupleOffset
 	 */
 	unsigned **mapRels;
@@ -27,8 +33,8 @@ struct InterMetaData
 	/* Number of relations participating in the query */
 	unsigned queryRelations;
 
-	/* Size of interResults array 
-	 * I.e: max number of "intermediate" entities that might be created 
+	/* Size of interResults array
+	 * I.e: max number of "intermediate" entities that might be created
 	 */
 	unsigned maxNumOfVectors;
 };
@@ -45,7 +51,7 @@ typedef struct Index
 	/* These are the two arrays
 		used for the indexing of a single bucket */
 	unsigned *chainArray;
-	unsigned *bucketArray;	
+	unsigned *bucketArray;
 }Index;
 
 /**
@@ -53,11 +59,12 @@ typedef struct Index
  */
 typedef struct RadixHashJoinInfo
 {
+	unsigned pos;
 	// Id of the relation [relevant to the parse order]
 	unsigned relId;
 
 	// Id of the column
-	unsigned colId; 
+	unsigned colId;
 
 	// Column values
 	uint64_t *col;
@@ -71,7 +78,7 @@ typedef struct RadixHashJoinInfo
 
 	// Intermediate vector
 	// In case the relation is not in the intermediate results,vector won't be used at all.
-	struct Vector *vector;
+	struct Vector **vector;
 
 	// Vector's address [Useful when we want to destroy the vector after having executed the join]
 	struct Vector **ptrToVec;
@@ -81,7 +88,7 @@ typedef struct RadixHashJoinInfo
 	unsigned *map;
 
 	// Map's address [Useful when we want to destroy the map array after having executed the join]
-	unsigned **ptrToMap; 
+	unsigned **ptrToMap;
 
 	// Number of relations participating in the query
 	// I.e: size of map array

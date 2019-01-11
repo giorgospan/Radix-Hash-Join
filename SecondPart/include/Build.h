@@ -6,6 +6,13 @@
 #define  HASH_RANGE_2 301
 #define  HASH_FUN_2(KEY) ((KEY)%(301))
 
+struct buildArg{
+  unsigned bucket;
+  RadixHashJoinInfo *info;
+};
+
+
+void buildFunc(void* arg);
 void build(RadixHashJoinInfo *infoLeft,RadixHashJoinInfo *infoRight);
 void initializeIndexArray(RadixHashJoinInfo *info);
 void buildIndexPerBucket(RadixHashJoinInfo *info);

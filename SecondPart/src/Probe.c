@@ -8,7 +8,11 @@
 #include "Build.h"
 #include "Utils.h"
 
+void joinFunc(void *arg){
 
+
+
+}
 
 void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results)
 {

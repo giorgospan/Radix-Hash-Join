@@ -17,7 +17,7 @@ void destroyQueryInfo(struct QueryInfo *qInfo)
 	free(qInfo->predicates);
 	free(qInfo->filters);
 	free(qInfo->selections);
-	free(qInfo);			
+	free(qInfo);
 }
 
 void parseQuery(struct QueryInfo *qInfo,char *rawQuery)
@@ -77,7 +77,7 @@ void parseSelections(struct QueryInfo *qInfo,char *rawSelections)
 	char* temp = rawSelections;
 	unsigned relId,colId,i;
 	int offset;
-	
+
 	/* Get number of selections */
 	qInfo->numOfSelections = 0;
 	while(sscanf(temp,"%*u.%*u%n",&offset)>=0)
@@ -191,7 +191,7 @@ int isFilter(char *predicate)
 
 	if(!strstr(constant,"."))
 		return 1;
-	else 
+	else
 		return 0;
 }
 
@@ -225,7 +225,7 @@ unsigned getNumOfColEqualities(struct QueryInfo *qInfo)
 	for(unsigned i=0;i<qInfo->numOfPredicates;++i)
 		if(isColEquality(&qInfo->predicates[i]))
 			++sum;
-	return sum;	
+	return sum;
 }
 
 unsigned getNumOfJoins(struct QueryInfo *qInfo)
@@ -256,7 +256,7 @@ void printTest(struct QueryInfo *qInfo)
 			fprintf(stderr,"[%u.%u=%u.%u] & ",leftRelId,leftColId,rightRelId,rightColId);
 		else
 			fprintf(stderr,"%u.%u=%u.%u & ",leftRelId,leftColId,rightRelId,rightColId);
-	} 
+	}
 	for(unsigned j=0;j<qInfo->numOfFilters;++j)
 	{
 		unsigned relId    = getRelId(&qInfo->filters[j].filterLhs);
@@ -273,4 +273,5 @@ void printTest(struct QueryInfo *qInfo)
 		unsigned colId = getColId(&qInfo->selections[j]);
 		fprintf(stderr,"%u.%u ",relId,colId);
 	}
+	fprintf(stderr, "n\n");
 }

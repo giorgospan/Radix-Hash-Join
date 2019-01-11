@@ -77,13 +77,13 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	build(left,right);
 
 	// Probe
-	struct Vector *result;
-	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(left,right,result);
-	//fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
+	struct Vector **results;
+	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"joinNonInterNonInter");
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+		createVector(results+i,left->tupleSize+right->tupleSize);
+	probe(left,right,results[0]);
 
 	// Update mapRels and interResults //
-
 	// Construct new mapping
 	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinNonInterNonInter");
 	for(unsigned i=0;i<inter->queryRelations;++i)
@@ -97,14 +97,21 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	*left->ptrToMap = NULL;
 	free(*right->ptrToMap);
 	*right->ptrToMap = NULL;
-	destroyVector(left->ptrToVec);
-	destroyVector(right->ptrToVec);
+	// destroyVector(left->ptrToVec);
+	// destroyVector(right->ptrToVec);
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+	{
+		destroyVector(left->ptrToVec+i);
+		destroyVector(right->ptrToVec+i);
+	}
 
 	// Attach the new ones to first available position
-	unsigned pos             = getFirstAvailablePos(inter);
-	inter->mapRels[pos]      = newMap;
-	inter->interResults[pos] = result;
-
+	unsigned pos                = getFirstAvailablePos(inter);
+	inter->mapRels[pos]         = newMap;
+	for(unsigned i=0;i<HASH_RANGE_1;++i){
+		inter->interResults[pos][i] = results[i];
+	}
+	free(results);
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
 }
@@ -119,13 +126,14 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	build(left,right);
 
 	// Probe
-	struct Vector *result;
-	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(left,right,result);
-	// fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
+	for(unsigned i=0;i<HASH_RANGE_1;++i){
+		destroyVector(right->ptrToVec+i);
+		destroyVector(left->ptrToVec+i);
+		createVector(right->ptrToVec+i,left->tupleSize+right->tupleSize);
+	}
+	probe(left,right,right->ptrToVec[0]);
 
 	// Update mapRels and interResults //
-
 	// Construct new mapping
 	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinNonInterInter");
 
@@ -139,13 +147,10 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	*left->ptrToMap = NULL;
 	free(*right->ptrToMap);
 	*right->ptrToMap = NULL;
-	destroyVector(left->ptrToVec);
-	destroyVector(right->ptrToVec);
 
 	// Attach the new ones to first available position
-	unsigned pos             = getFirstAvailablePos(inter);
-	inter->mapRels[pos]      = newMap;
-	inter->interResults[pos] = result;
+	inter->mapRels[right->pos] = newMap;
+
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
 }
@@ -160,13 +165,14 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	build(left,right);
 
 	// Probe
-	struct Vector *result;
-	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(left,right,result);
-	// fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
+	for(unsigned i=0;i<HASH_RANGE_1;++i){
+		destroyVector(right->ptrToVec+i);
+		destroyVector(left->ptrToVec+i);
+		createVector(left->ptrToVec+i,left->tupleSize+right->tupleSize);
+	}
+	probe(left,right,left->ptrToVec[0]);
 
 	// Update mapRels and interResults //
-
 	// Construct new mapping
 	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinInterNonInter");
 
@@ -179,16 +185,13 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	*left->ptrToMap = NULL;
 	free(*right->ptrToMap);
 	*right->ptrToMap = NULL;
-	destroyVector(left->ptrToVec);
-	destroyVector(right->ptrToVec);
 
 	// Attach the new ones to first available position
-	unsigned pos             = getFirstAvailablePos(inter);
-	inter->mapRels[pos]      = newMap;
-	inter->interResults[pos] = result;
+	inter->mapRels[left->pos] = newMap;
+
+	// free(results);
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
-
 }
 
 void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHashJoinInfo* right)
@@ -209,13 +212,13 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 	build(left,right);
 
 	// Probe
-	struct Vector *result;
-	createVector(&result,left->tupleSize+right->tupleSize);
-	probe(left,right,result);
-	//fprintf(stderr, "Vector size:%u\n\n",result->nextPos);
+	struct Vector **results;
+	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"joinInterNonInter");
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+		createVector(results+i,left->tupleSize+right->tupleSize);
+	probe(left,right,results[0]);
 
 	// Update mapRels and interResults //
-
 	// Construct new mapping
 	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinInterInter");
 	for(unsigned i=0;i<inter->queryRelations;++i)
@@ -230,13 +233,19 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 	*left->ptrToMap = NULL;
 	free(*right->ptrToMap);
 	*right->ptrToMap = NULL;
-	destroyVector(left->ptrToVec);
-	destroyVector(right->ptrToVec);
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+	{
+		destroyVector(left->ptrToVec+i);
+		destroyVector(right->ptrToVec+i);
+	}
 
 	// Attach the new ones to first available position
-	unsigned pos             = getFirstAvailablePos(inter);
-	inter->mapRels[pos]      = newMap;
-	inter->interResults[pos] = result;
+	unsigned pos                = getFirstAvailablePos(inter);
+	inter->mapRels[pos]         = newMap;
+	for(unsigned i=0;i<HASH_RANGE_1;++i){
+		inter->interResults[pos][i] = results[i];
+	}
+	free(results);
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
 }

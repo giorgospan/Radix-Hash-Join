@@ -11,6 +11,7 @@ struct Relation
 	uint64_t **columns;
 };
 
+
 /**
  * @brief   	Creates a new relation and calls
  *           	loadRelation() to retrieve relation's data.
@@ -34,7 +35,7 @@ void printRelation(struct Relation *rel);
 void dumpRelation(struct Relation *rel,char *fileName);
 
 /**
- * @brief    	Free-s any allocated space  
+ * @brief    	Free-s any allocated space
  */
 void destroyRelation(struct Relation *rel);
 

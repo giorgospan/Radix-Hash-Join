@@ -8,19 +8,21 @@
 #include "Partition.h"
 #include "Operations.h"
 #include "Utils.h"
-#include "Vector.h"/* vectorDestroy(..)*/
+#include "Vector.h"/* destroyVector(..)*/
 
 void createInterMetaData(struct InterMetaData **inter,struct QueryInfo *q)
 {
 	*inter                    = allocate(sizeof(struct InterMetaData),"createInterMetaData-1st");
 	(*inter)->maxNumOfVectors = getNumOfFilters(q) + getNumOfColEqualities(q) + getNumOfJoins(q);
-	(*inter)->interResults    = allocate((*inter)->maxNumOfVectors*sizeof(struct Vector*),"createInterMetaData-2nd");
+	(*inter)->interResults    = allocate((*inter)->maxNumOfVectors*sizeof(struct Vector**),"createInterMetaData-2nd");
 	(*inter)->mapRels         = allocate((*inter)->maxNumOfVectors*sizeof(unsigned*),"createInterMetaData-3rd");
 	(*inter)->queryRelations  = getNumOfRelations(q);
 
 	for(unsigned i=0;i<(*inter)->maxNumOfVectors;++i){
-		(*inter)->interResults[i] = NULL;
-		(*inter)->mapRels[i]      = NULL;
+		(*inter)->interResults[i] = allocate(HASH_RANGE_1*sizeof(struct Vector*),"createInterMetaData-4th");
+		for(unsigned v=0;v<HASH_RANGE_1;++v)
+			(*inter)->interResults[i][v] = NULL;
+		(*inter)->mapRels[i] = NULL;
 	}
 }
 
@@ -34,7 +36,7 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 			unsigned leftColId     = getColId(&q->predicates[i].left);
 			unsigned rightColId    = getColId(&q->predicates[i].right);
 			unsigned pos           = getVectorPos(inter,relId);
-			struct Vector **vector = &inter->interResults[pos];
+			struct Vector **vector = inter->interResults[pos]+0;
 			unsigned numOfTuples   = getRelationTuples(joiner,original);
 			uint64_t *leftCol      = getColumn(joiner,original,leftColId);
 			uint64_t *rightCol     = getColumn(joiner,original,rightColId);
@@ -69,7 +71,7 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 		uint64_t constant      = getConstant(&q->filters[i]);
 		Comparison cmp         = getComparison(&q->filters[i]);
 		unsigned pos           = getVectorPos(inter,relId);
-		struct Vector **vector = &inter->interResults[pos];
+		struct Vector **vector = inter->interResults[pos]+0;
 		unsigned numOfTuples   = getRelationTuples(joiner,original);
 		uint64_t *col          = getColumn(joiner,original,colId);
 		if(isInInter(*vector))
@@ -150,7 +152,7 @@ unsigned getVectorPos(struct InterMetaData *inter,unsigned relId)
 unsigned getFirstAvailablePos(struct InterMetaData* inter)
 {
 	for(unsigned i=0;i<inter->maxNumOfVectors;++i)
-		if(!inter->interResults[i])
+		if(!inter->mapRels[i])
 			return i;
 }
 
@@ -172,7 +174,7 @@ void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct Que
 		unsigned original     = getOriginalRelId(q,&q->selections[i]);
 		unsigned relId        = getRelId(&q->selections[i]);
 		unsigned colId        = getColId(&q->selections[i]);
-		struct Vector *vector = inter->interResults[getVectorPos(inter,relId)];
+		struct Vector *vector = inter->interResults[getVectorPos(inter,relId)][0];
 		unsigned *rowIdMap    = inter->mapRels[getVectorPos(inter,relId)];
 		uint64_t *col         = getColumn(joiner,original,colId);
 		unsigned isLast       = i == q->numOfSelections-1;
@@ -214,14 +216,14 @@ void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct Select
 	arg->vector         = inter->interResults[getVectorPos(inter,arg->relId)];
 	arg->map            = inter->mapRels[getVectorPos(inter,arg->relId)];
 	arg->queryRelations = inter->queryRelations;
-	arg->ptrToVec       = &inter->interResults[getVectorPos(inter,arg->relId)];
+	arg->ptrToVec       = inter->interResults[getVectorPos(inter,arg->relId)]+0;
 	arg->ptrToMap       = &inter->mapRels[getVectorPos(inter,arg->relId)];
-
-	if(isInInter(arg->vector))
+	arg->pos = getVectorPos(inter,arg->relId);
+	if(isInInter(arg->vector[0]))
 	{
 		arg->isInInter   = 1;
-		arg->numOfTuples = getVectorTuples(arg->vector);
-		arg->tupleSize   = getTupleSize(arg->vector);
+		arg->numOfTuples = getVectorTuples(arg->vector[0]);
+		arg->tupleSize   = getTupleSize(arg->vector[0]);
 	}
 	else
 	{
@@ -236,7 +238,9 @@ void destroyInterMetaData(struct InterMetaData *inter)
 {
 	for(unsigned i=0;i<inter->maxNumOfVectors;++i)
 	{
-		destroyVector(&inter->interResults[i]);
+		for(unsigned v=0;v<HASH_RANGE_1;++v)
+			destroyVector(inter->interResults[i]+v);
+		free(inter->interResults[i]);
 		free(inter->mapRels[i]);
 	}
 	free(inter->interResults);

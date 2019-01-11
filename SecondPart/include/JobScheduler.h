@@ -1,16 +1,24 @@
 #ifndef JOB_SCHEDULER_H
 #define JOB_SCHEDULER_H
 
-#include "Job.h"
-
 /* Mutexes - conditional variables - barriers */
 extern pthread_mutex_t queueMtx;
 extern pthread_cond_t condNonEmpty;
 extern pthread_barrier_t barrier;
+extern struct JobScheduler* js;
 
 /* Job queue */
 /* It must be visible from all threads including the main thread of course */
 extern struct Queue* jobQueue;
+
+struct Job{
+  // Function that the worker thread is going to execute
+  void (*function)(void*);
+  // Argument passed to the function
+  void *argument;
+};
+
+
 
 struct JobScheduler{
     // number of worker threads

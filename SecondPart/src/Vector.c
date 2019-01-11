@@ -6,6 +6,8 @@
 #include "Vector.h"
 #include "Utils.h"
 
+unsigned initSize;
+
 void createVector(struct Vector **vector,unsigned tupleSize)
 {
 	*vector              = allocate(sizeof(struct Vector),"createVector");
@@ -34,8 +36,9 @@ void insertAtVector(struct Vector *vector,unsigned *tuple)
 	/* If vector is empty , create table */
 	if(vectorIsEmpty(vector))
 	{
-		/* Starting with 500000 tuples */
-		vector->capacity = 500000*vector->tupleSize;
+		/* initSize is initialized according to avgNumOfTuples of the given relations */
+		/* check Joiner.c */
+		vector->capacity = initSize*vector->tupleSize;
 		vector->table    = allocate(vector->capacity*sizeof(unsigned),"insertAtVector");
 	}
 
@@ -122,7 +125,7 @@ void scanFilter(struct Vector *new,struct Vector* old,uint64_t *col,Comparison c
 // Fill info with values and tuples
 void scanJoin(RadixHashJoinInfo *joinRel)
 {
-	struct Vector *old    = joinRel->vector;
+	struct Vector *old    = joinRel->vector[0];
 	struct Vector *new    = joinRel->unsorted->tuples;
 
 	// Position of this relation's rowId inside tuple

@@ -5,22 +5,24 @@
 #include <time.h> /*time()--debugging*/
 #include <pthread.h>
 
-
 #include "Utils.h" /*allocate()*/
 #include "JobScheduler.h"
 #include "Joiner.h"
+#include "Partition.h"
+#include "Build.h"
+#include "Probe.h"
 #include "Queue.h"
 
 pthread_mutex_t queueMtx    = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condNonEmpty = PTHREAD_COND_INITIALIZER;
 struct Queue* jobQueue      = NULL;
+struct JobScheduler* js     = NULL;
 pthread_barrier_t barrier;
-
 
 void createJobScheduler(struct JobScheduler** js){
 
   *js              = allocate(sizeof(struct JobScheduler),"createJobScheduler1");
-  (*js)->threadNum = 4;
+  (*js)->threadNum = 10;
   (*js)->tids      = allocate((*js)->threadNum*sizeof(pthread_t),"createJobScheduler2");
 
   // Create Queue with 1000 jobs max size
@@ -74,7 +76,7 @@ void createJobArrays(struct JobScheduler* js){
   js->joinJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->joinJobs[i].argument = malloc(sizeof(struct joinArg));
-    js->joinJobs[i].function = partitionFunc;
+    js->joinJobs[i].function = joinFunc;
   }
 
 }

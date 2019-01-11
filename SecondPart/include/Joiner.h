@@ -43,6 +43,7 @@ void join(struct Joiner *joiner,struct QueryInfo *q);
 unsigned getRelationTuples(struct Joiner *joiner,unsigned relId);
 
 void setRadixBits(struct Joiner* joiner);
+void setVectorInitSize(struct Joiner *joiner);
 
 uint64_t *getColumn(struct Joiner *joiner,unsigned relId,unsigned colId);
 
