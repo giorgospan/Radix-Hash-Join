@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <unistd.h>/*write()*/
 #include <string.h>/*strlen()*/
+#include <pthread.h>
 
 #include "Vector.h"
 #include "Utils.h"
+#include "JobScheduler.h"
 
 unsigned initSize;
 
@@ -24,11 +26,6 @@ void createVectorFixedSize(struct Vector **vector,unsigned tupleSize,unsigned fi
 	(*vector)->tupleSize = tupleSize;
 	(*vector)->table     = allocate((*vector)->capacity *sizeof(unsigned),"createVectorFixedSize2");
 	(*vector)->nextPos   = 0;
-}
-
-void resetVector(struct Vector *vector,unsigned newTupleSize){
-	vector->nextPos   = 0;
-	vector->tupleSize = newTupleSize;
 }
 
 void insertAtVector(struct Vector *vector,unsigned *tuple)
@@ -95,13 +92,13 @@ void printVector(struct Vector *vector)
 
 void printTuple(struct Vector *vector,unsigned pos)
 {
-	printf("(");
+	fprintf(stderr,"(");
 	for(unsigned i=0;i<vector->tupleSize;++i)
 		if(i==vector->tupleSize-1)
-			printf("%u",vector->table[pos+i]+1);
+			fprintf(stderr,"%u",vector->table[pos+i]+1);
 		else
-			printf("%u,",vector->table[pos+i]+1);
-	printf(")\n");
+			fprintf(stderr,"%u,",vector->table[pos+i]+1);
+	fprintf(stderr,")\n");
 }
 
 void scanColEquality(struct Vector *new,struct Vector* old,uint64_t *leftCol,uint64_t* rightCol,unsigned posLeft,unsigned posRight)
@@ -125,28 +122,32 @@ void scanFilter(struct Vector *new,struct Vector* old,uint64_t *col,Comparison c
 // Fill info with values and tuples
 void scanJoin(RadixHashJoinInfo *joinRel)
 {
-	struct Vector *old    = joinRel->vector[0];
-	struct Vector *new    = joinRel->unsorted->tuples;
+	struct Vector *old;
+	struct Vector *new  = joinRel->unsorted->tuples;
+	unsigned sizeOfVector;
 
 	// Position of this relation's rowId inside tuple
 	unsigned tupleOffset  = joinRel->map[joinRel->relId];
 
-	unsigned sizeOfVector = old->nextPos;
 	uint64_t *origValues  = joinRel->col;
 	uint64_t *colValues   = joinRel->unsorted->values;
 	unsigned *rowIds      = joinRel->unsorted->rowIds;
 
 	unsigned k=0;
-	// We scan the old vector
-	for(unsigned i=0;i<sizeOfVector;i+=old->tupleSize)
+	// We scan the old vectors [i.e: the intermediate result]
+	for(unsigned v=0;v<HASH_RANGE_1;++v)
 	{
-		unsigned origRowId = old->table[i+tupleOffset];
-		// Add value
-		colValues[k]       = origValues[origRowId];
-		// Add tuple
-		insertAtVector(new,&old->table[i]);
-		// Add rowId
-		rowIds[k++]        = k;
+		if(old = joinRel->vector[v])
+		for(unsigned i=0;i<old->nextPos;i+=old->tupleSize)
+		{
+			unsigned origRowId = old->table[i+tupleOffset];
+			// Add value
+			colValues[k]       = origValues[origRowId];
+			// Add tuple
+			insertAtVector(new,&old->table[i]);
+			// Add rowId
+			rowIds[k++]        = k;
+		}
 	}
 }
 
@@ -198,4 +199,28 @@ uint64_t checkSum(struct Vector *vector,uint64_t *col,unsigned rowIdPos)
 	for(unsigned i=0;i<vector->nextPos;i+=vector->tupleSize)
 		sum+=col[vector->table[i+rowIdPos]];
 	return sum;
+}
+
+void checkSumFunc(void *arg){
+	struct checkSumArg *myarg = arg;
+	*myarg->sum=0;
+	for(unsigned i=0;i<myarg->vector->nextPos;i+=myarg->vector->tupleSize)
+		*myarg->sum+=myarg->col[myarg->vector->table[i+myarg->rowIdPos]];
+	pthread_mutex_lock(&jobsFinishedMtx);
+	++jobsFinished;
+	pthread_cond_signal(&condJobsFinished);
+	pthread_mutex_unlock(&jobsFinishedMtx);
+}
+
+
+void colEqualityFunc(void *arg)
+{
+	struct colEqualityArg *myarg = arg;
+	for(unsigned i=0;i<myarg->old->nextPos;i+=myarg->old->tupleSize)
+		if(myarg->leftCol[myarg->old->table[i+myarg->posLeft]] == myarg->rightCol[myarg->old->table[i+myarg->posRight]])
+			insertAtVector(myarg->new,&myarg->old->table[i]);
+	pthread_mutex_lock(&jobsFinishedMtx);
+	++jobsFinished;
+	pthread_cond_signal(&condJobsFinished);
+	pthread_mutex_unlock(&jobsFinishedMtx);
 }

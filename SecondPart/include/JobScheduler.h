@@ -3,12 +3,17 @@
 
 /* Mutexes - conditional variables - barriers */
 extern pthread_mutex_t queueMtx;
+extern pthread_mutex_t partitionMtx;
+extern pthread_mutex_t jobsFinishedMtx;
 extern pthread_cond_t condNonEmpty;
+extern pthread_cond_t condJobsFinished;
 extern pthread_barrier_t barrier;
 extern struct JobScheduler* js;
+extern unsigned jobsFinished;
+
 
 /* Job queue */
-/* It must be visible from all threads including the main thread of course */
+/* It must be visible from all threads, including the main thread of course */
 extern struct Queue* jobQueue;
 
 struct Job{
@@ -27,11 +32,16 @@ struct JobScheduler{
     pthread_t *tids;
     // histgrams
     unsigned **histArray;
-    // job arrays [4 kinds of jobs]
+    // checksums
+    uint64_t *checkSumArray;
+
+    // job arrays [different kinds of jobs]
     struct Job *histJobs;
     struct Job *partitionJobs;
     struct Job *buildJobs;
     struct Job *joinJobs;
+    struct Job *colEqualityJobs;
+    struct Job *checkSumJobs;
 };
 
 void createJobScheduler(struct JobScheduler** js);

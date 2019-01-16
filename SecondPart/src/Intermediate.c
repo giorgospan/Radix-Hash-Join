@@ -2,6 +2,7 @@
 #include <string.h>/*strlen()*/
 #include <unistd.h>/*write()*/
 #include <stdlib.h>/*free()*/
+#include <pthread.h>
 
 #include "Intermediate.h"
 #include "Parser.h"
@@ -9,6 +10,8 @@
 #include "Operations.h"
 #include "Utils.h"
 #include "Vector.h"/* destroyVector(..)*/
+#include "Queue.h"
+#include "JobScheduler.h"
 
 void createInterMetaData(struct InterMetaData **inter,struct QueryInfo *q)
 {
@@ -40,8 +43,9 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 			unsigned numOfTuples   = getRelationTuples(joiner,original);
 			uint64_t *leftCol      = getColumn(joiner,original,leftColId);
 			uint64_t *rightCol     = getColumn(joiner,original,rightColId);
-			if(isInInter(*vector))
+			if(isInInter(vector[0]))
 			{
+				// fprintf(stderr, "Column Equality Inter\n");
 				// printf("~~~Again~~~\n");
 				// printf("Pos:%u\n",pos);
 				// printf("%u.%u=%u.%u [r%u.tbl]\n",relId,leftColId,relId,rightColId,original);
@@ -74,7 +78,7 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 		struct Vector **vector = inter->interResults[pos]+0;
 		unsigned numOfTuples   = getRelationTuples(joiner,original);
 		uint64_t *col          = getColumn(joiner,original,colId);
-		if(isInInter(*vector))
+		if(isInInter(vector[0]))
 		{
 			// fprintf(stderr,"%u.%u%c%lu [r%u.tbl]\n\n",relId,colId,cmp,constant,original);
 			filterInter(col,cmp,constant,vector);
@@ -171,19 +175,51 @@ void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct Que
 {
 	for(unsigned i=0;i<q->numOfSelections;++i)
 	{
-		unsigned original     = getOriginalRelId(q,&q->selections[i]);
-		unsigned relId        = getRelId(&q->selections[i]);
-		unsigned colId        = getColId(&q->selections[i]);
-		struct Vector *vector = inter->interResults[getVectorPos(inter,relId)][0];
-		unsigned *rowIdMap    = inter->mapRels[getVectorPos(inter,relId)];
-		uint64_t *col         = getColumn(joiner,original,colId);
-		unsigned isLast       = i == q->numOfSelections-1;
+		unsigned original      = getOriginalRelId(q,&q->selections[i]);
+		unsigned relId         = getRelId(&q->selections[i]);
+		unsigned colId         = getColId(&q->selections[i]);
+		struct Vector **vector = inter->interResults[getVectorPos(inter,relId)];
+		unsigned *rowIdMap     = inter->mapRels[getVectorPos(inter,relId)];
+		uint64_t *col          = getColumn(joiner,original,colId);
+		unsigned isLast        = i == q->numOfSelections-1;
 
 		// In case the given relation did not take participate in any of the predicates/filters
-		if(!isInInter(vector))
+		if(!isInInter(vector[0]))
 			printCheckSum(0,isLast);
 		else
-			printCheckSum(checkSum(vector,col,rowIdMap[relId]),isLast);
+		{
+			// uint64_t allCheckSums=0;
+			// for(unsigned v=0;v<HASH_RANGE_1;++v)
+			// 	for(unsigned i=0;i<vector[v]->nextPos;i+=vector[v]->tupleSize)
+			// 		allCheckSums+=col[vector[v]->table[i+rowIdMap[relId]]];
+			// printCheckSum(allCheckSums,isLast);
+
+			for(unsigned i=0;i<HASH_RANGE_1;++i){
+				struct checkSumArg *arg = js->checkSumJobs[i].argument;
+				arg->vector             = vector[i];
+				arg->col                = col;
+				arg->rowIdPos           = rowIdMap[relId];
+				arg->sum                = js->checkSumArray+i;
+				pthread_mutex_lock(&queueMtx);
+				enQueue(jobQueue,&js->checkSumJobs[i]);
+				pthread_cond_signal(&condNonEmpty);
+				pthread_mutex_unlock(&queueMtx);
+			}
+			pthread_mutex_lock(&jobsFinishedMtx);
+			while (jobsFinished!=HASH_RANGE_1) {
+				pthread_cond_wait(&condJobsFinished,&jobsFinishedMtx);
+			}
+			jobsFinished = 0;
+			pthread_cond_signal(&condJobsFinished);
+			pthread_mutex_unlock(&jobsFinishedMtx);
+
+			uint64_t allCheckSums=0;
+			for(unsigned i=0;i<HASH_RANGE_1;++i)
+			{
+				allCheckSums+=js->checkSumArray[i];
+			}
+			printCheckSum(allCheckSums,isLast);
+		}
 	}
 }
 
@@ -222,7 +258,10 @@ void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct Select
 	if(isInInter(arg->vector[0]))
 	{
 		arg->isInInter   = 1;
-		arg->numOfTuples = getVectorTuples(arg->vector[0]);
+		arg->numOfTuples = 0;
+		for(unsigned i=0;i<HASH_RANGE_1;++i)
+			if(arg->vector[i])
+				arg->numOfTuples += getVectorTuples(arg->vector[i]);
 		arg->tupleSize   = getTupleSize(arg->vector[0]);
 	}
 	else

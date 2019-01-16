@@ -5,8 +5,7 @@
 
 
 struct joinArg{
-  unsigned start;
-  unsigned end;
+  unsigned bucket;
   RadixHashJoinInfo *left;
   RadixHashJoinInfo *right;
   struct Vector *results;

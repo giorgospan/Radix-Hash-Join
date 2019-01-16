@@ -273,5 +273,5 @@ void printTest(struct QueryInfo *qInfo)
 		unsigned colId = getColId(&qInfo->selections[j]);
 		fprintf(stderr,"%u.%u ",relId,colId);
 	}
-	fprintf(stderr, "n\n");
+	fprintf(stderr, "\n");
 }

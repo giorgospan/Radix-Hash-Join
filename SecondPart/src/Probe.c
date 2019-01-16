@@ -2,16 +2,103 @@
 #include <stdlib.h> /*malloc() and free()*/
 #include <string.h>/* strerror() */
 #include <errno.h>/* errno */
+#include <pthread.h>
 
 #include "Probe.h"
 #include "Vector.h"
 #include "Build.h"
 #include "Utils.h"
+#include "JobScheduler.h"
 
 void joinFunc(void *arg){
 
+	struct joinArg *myarg = arg;
+	RadixHashJoinInfo *left,*right;
+	left                   = myarg->left;
+	right                  = myarg->right;
+	struct Vector* results = myarg->results;
+	unsigned searchBucket  = myarg->bucket;
+
+	unsigned i;
+	unsigned searchValue;
+	uint64_t hash;
+	unsigned start;
+	int k;
+	struct Index *searchIndex;
+
+	// fprintf(stderr, "%u\n",right->isLeft);
+	// left->isLeft  = 1;
+	// right->isLeft = 0;
+
+	RadixHashJoinInfo *big,*small;
+	big   = left->isSmall ? right:left;
+	small = left->isSmall ? left:right;
+
+	/* The range that current thread is responsible for */
+	unsigned tStart = big->pSum[searchBucket];
+	unsigned tEnd   = tStart + big->hist[searchBucket];
+
+	unsigned *tupleToInsert;
+	unsigned tupleSize  = small->tupleSize+big->tupleSize;
+	if(  (tupleToInsert = malloc(tupleSize*sizeof(unsigned))) == NULL   ){
+		fprintf(stderr,"malloc failed[checkEqual]: %s\nExiting...\n\n",strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
 
+	/* For every tuple(i.e:record) in the big relation */
+	for(i=tStart;i<tEnd;i++)
+	{
+		/* The value we are gonna search for */
+		searchValue = big->sorted->values[i];
+
+		/* Find out in which bucket of the small relation
+			we should search --- No need, we already know that*/
+		// searchBucket = HASH_FUN_1(searchValue);
+
+		/* Bucket is empty, there is nothing to search here */
+		if(small->hist[searchBucket] == 0)
+			continue;
+
+		/* Fetch starting point of the bucket */
+		start = small->pSum[searchBucket];
+
+		/* Fetch the index of this bucket */
+		searchIndex = small->indexArray[searchBucket];
+
+		/* Find out where to look for in the bucketArray of the index */
+		hash = HASH_FUN_2(searchValue);
+
+		/* Bucket is not empty, but there is no value equal to the searchValue */
+		if(searchIndex->bucketArray[hash]==0)
+			continue;
+
+		/* Warning: In bucketArray and chainArray we've stored the rowIds relevant to the bucket [i.e: 0 ~> bucketSize-1] */
+
+		k = searchIndex->bucketArray[hash] - 1;
+		checkEqual(small,big,i,start,searchValue,k,results,tupleToInsert);
+
+		while(1)
+		{
+			// We've reached the end of the chain
+			if(searchIndex->chainArray[k] == 0)
+				break;
+
+			/* Step further on the chain */
+			else
+			{
+				k = searchIndex->chainArray[k] - 1;
+				checkEqual(small,big,i,start,searchValue,k,results,tupleToInsert);
+			}
+		}
+
+	}
+	free(tupleToInsert);
+	pthread_mutex_lock(&jobsFinishedMtx);
+	// fprintf(stderr, "Thread[%u] working on bucket:%u | jobs already finished:%u\n",(unsigned)pthread_self(),myarg->bucket,jobsFinished);
+	++jobsFinished;
+	pthread_cond_signal(&condJobsFinished);
+	pthread_mutex_unlock(&jobsFinishedMtx);
 }
 
 void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *results)

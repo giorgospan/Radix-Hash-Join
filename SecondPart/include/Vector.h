@@ -26,6 +26,26 @@ struct Vector
 	unsigned capacity;
 };
 
+struct checkSumArg{
+	struct Vector *vector;
+	uint64_t *col;
+	unsigned rowIdPos;
+	uint64_t *sum;
+};
+void checkSumFunc(void *arg);
+
+struct colEqualityArg{
+	struct Vector *new;
+	struct Vector* old;
+	uint64_t *leftCol;
+	uint64_t* rightCol;
+	unsigned posLeft;
+	unsigned posRight;
+};
+void colEqualityFunc(void *arg);
+
+
+
 /* Creators/Destroyer */
 void createVector(struct Vector **vector,unsigned tupleSize);
 /**
@@ -56,7 +76,6 @@ void scanJoin(RadixHashJoinInfo *joinRel);
 int vectorIsFull(struct Vector *vector);
 int vectorIsEmpty(struct Vector *vector);
 
-void resetVector(struct Vector *vector,unsigned newTupleSize);
 void printVector(struct Vector *vector);
 void printTuple(struct Vector *vector,unsigned pos);
 uint64_t checkSum(struct Vector *vector,uint64_t *col,unsigned rowIdPos);

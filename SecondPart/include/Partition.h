@@ -7,19 +7,19 @@
 struct histArg{
   unsigned start;
   unsigned end;
-  unsigned* histogram;
+  uint64_t *values;
+  unsigned *histogram;
 };
 
 struct partitionArg{
   unsigned start;
   unsigned end;
+  unsigned *pSumCopy;
   RadixHashJoinInfo *info;
 };
-
 
 void histFunc(void*);
 void partitionFunc(void*);
 void partition(RadixHashJoinInfo*);
-void sortColumn(RadixHashJoinInfo *i);
 
 #endif

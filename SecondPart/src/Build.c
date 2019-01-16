@@ -1,26 +1,96 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <unistd.h> /*sleep()--debugging*/
 
 #include "Build.h"
+#include "Queue.h"
 #include "Partition.h"
+#include "JobScheduler.h"
 #include "Utils.h"
 
 void buildFunc(void* arg)
 {
+	struct buildArg *myarg = arg;
+	unsigned bucketSize;
+	uint64_t hash;
+	unsigned chainPos;
+	int j;
+	int start;
+
+	if(myarg->info->indexArray[myarg->bucket] != NULL)
+	{
+
+		// Fetch bucket's starting point from pSum array
+		// Remember: pSum is array with pointers to int
+		start = myarg->info->pSum[myarg->bucket];
+
+		// Fetch bucket's size from hist array
+		// Remember: hist is array with ints
+		bucketSize = myarg->info->hist[myarg->bucket];
+
+		// fprintf(stderr,"[%u]bucketSize:%u\n",myarg->bucket,bucketSize);
+
+		/* Scan from the bottom of the bucket to the top */
+		for(j=start+bucketSize-1;j>=start;j--)
+		{
+			hash = HASH_FUN_2(myarg->info->sorted->values[j]);
+			// fprintf(stderr,"\nsecondHash(%lu): %lu\n",myarg->info->sorted->values[j],hash);
+
+			if(myarg->info->indexArray[myarg->bucket]->bucketArray[hash] == 0)
+			{
+				// fprintf(stderr,"Found empty spot in bucketArray\n");
+				myarg->info->indexArray[myarg->bucket]->bucketArray[hash] = (j-start)+1;
+				// fprintf(stderr,"bucketArray[%lu]: %u\n",hash,  myarg->info->indexArray[myarg->bucket]->bucketArray[hash] );
+			}
+			else
+			{
+				/* Find the first zero in chainArray
+					by following the chain and
+					store "(j-start) + 1" in that place */
+				chainPos = myarg->info->indexArray[myarg->bucket]->bucketArray[hash]-1;
+				traverseChain(chainPos, myarg->info->indexArray[myarg->bucket]->chainArray, j-start + 1);
+			}
+		}
+	}
+
+	pthread_mutex_lock(&jobsFinishedMtx);
+	// fprintf(stderr, "Thread[%u] working on bucket:%u | jobs already finished:%u\n",(unsigned)pthread_self(),myarg->bucket,jobsFinished);
+	++jobsFinished;
+	pthread_cond_signal(&condJobsFinished);
+	pthread_mutex_unlock(&jobsFinishedMtx);
 
 }
 
 void build(RadixHashJoinInfo *infoLeft,RadixHashJoinInfo *infoRight)
 {
 	RadixHashJoinInfo *big,*small;
-	big            = (infoLeft->numOfTuples > infoRight->numOfTuples) ? infoLeft:infoRight;
+	big            = (infoLeft->numOfTuples >= infoRight->numOfTuples) ? infoLeft:infoRight;
 	small          = (infoLeft->numOfTuples < infoRight->numOfTuples) ? infoLeft:infoRight;
 	big->isSmall   = 0;
 	small->isSmall = 1;
 
 	initializeIndexArray(small);
-	buildIndexPerBucket(small);
+
+	for(unsigned i=0;i<HASH_RANGE_1;++i){
+			struct buildArg *arg = js->buildJobs[i].argument;
+			arg->bucket = i;
+			arg->info = small;
+			pthread_mutex_lock(&queueMtx);
+			enQueue(jobQueue,&js->buildJobs[i]);
+			pthread_cond_signal(&condNonEmpty);
+			pthread_mutex_unlock(&queueMtx);
+	}
+
+	pthread_mutex_lock(&jobsFinishedMtx);
+	while (jobsFinished!=HASH_RANGE_1) {
+		pthread_cond_wait(&condJobsFinished,&jobsFinishedMtx);
+	}
+	jobsFinished = 0;
+	pthread_cond_signal(&condJobsFinished);
+	pthread_mutex_unlock(&jobsFinishedMtx);
+
+	// buildIndexPerBucket(small);
 }
 
 void initializeIndexArray(RadixHashJoinInfo *info)
