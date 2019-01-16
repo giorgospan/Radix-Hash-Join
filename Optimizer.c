@@ -9,10 +9,13 @@
 
 struct columnStats** allocateStatArray(uint64_t size)
 {
-	struct columnStats** temp = allocate(sizeof(struct columnStats*) * size, "allocateStatArray");
+	struct columnStats** temp = malloc(sizeof(struct columnStats*) * size);
+	MALLOC_CHECK(temp);
+
 	for (uint64_t i = 0; i < size; i++)
 	{
-		temp[i] = allocate(sizeof(struct columnStats), "allocateStatArray 2");
+		temp[i] = malloc(sizeof(struct columnStats));
+		MALLOC_CHECK(temp[i]);
 		temp[i]->booleanArray = NULL;
 	}
 	return temp;
@@ -53,7 +56,8 @@ void findStats(uint64_t *column, struct columnStats *stat, uint64_t columnSize)
 	uint64_t sizeOfBooleanArray = (max - min + 1 > PRIMELIMIT) ? PRIMELIMIT : max - min + 1;
 	// fprintf(stderr, "Size of boolean array is  %lu\n", sizeOfBooleanArray);
 
-	stat->booleanArray = allocate(sizeOfBooleanArray, "findStats");
+	stat->booleanArray = malloc(sizeOfBooleanArray);
+	MALLOC_CHECK(stat->booleanArray);
 	stat->sizeOfBooleanArray = sizeOfBooleanArray;
 
 	/* Simple init for valgrind */

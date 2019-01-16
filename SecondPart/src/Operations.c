@@ -29,7 +29,8 @@ void colEqualityInter(uint64_t *leftCol,uint64_t *rightCol,unsigned posLeft,unsi
 {
 	struct Vector **results;
 	jobsFinished=0;
-	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"colEqualityInter");
+	results = malloc(HASH_RANGE_1*sizeof(struct Vector*));
+	MALLOC_CHECK(results);
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		createVector(results+i,getTupleSize(vector[0]));
 
@@ -112,7 +113,8 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 
 	// Probe
 	struct Vector **results;
-	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"joinNonInterNonInter");
+	results = malloc(HASH_RANGE_1*sizeof(struct Vector*));
+	MALLOC_CHECK(results);
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		createVector(results+i,left->tupleSize+right->tupleSize);
 
@@ -137,7 +139,8 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 
 	// Update mapRels and interResults //
 	// Construct new mapping
-	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinNonInterNonInter");
+	unsigned *newMap = malloc(inter->queryRelations*sizeof(unsigned));
+	MALLOC_CHECK(*newMap);
 	for(unsigned i=0;i<inter->queryRelations;++i)
 		newMap[i] = -1;
 
@@ -181,7 +184,8 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	// Probe
 	jobsFinished=0;
 	struct Vector **results;
-	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"joinNonInterNonInter");
+	results = malloc(HASH_RANGE_1*sizeof(struct Vector*));
+	MALLOC_CHECK(results);
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		createVector(results+i,left->tupleSize+right->tupleSize);
 
@@ -206,7 +210,8 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 
 	// Update mapRels and interResults //
 	// Construct new mapping
-	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinNonInterInter");
+	unsigned *newMap = malloc(inter->queryRelations*sizeof(unsigned));
+	MALLOC_CHECK(newMap);
 
 	newMap[left->relId] = 0;
 	for(unsigned i=0;i<inter->queryRelations;++i)
@@ -250,7 +255,8 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	// Probe
 	struct Vector **results;
 	jobsFinished = 0;
-	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"joinInterNonInter");
+	results = malloc(HASH_RANGE_1*sizeof(struct Vector*));
+	MALLOC_CHECK(results);
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		createVector(results+i,left->tupleSize+right->tupleSize);
 
@@ -275,7 +281,8 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 
 	// Update mapRels and interResults //
 	// Construct new mapping
-	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinInterNonInter");
+	unsigned *newMap = malloc(inter->queryRelations*sizeof(unsigned));
+	MALLOC_CHECK(newMap);
 
 	for(unsigned i=0;i<inter->queryRelations;++i)
 		newMap[i] = left->map[i];
@@ -324,7 +331,8 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 	// Probe
 	struct Vector **results;
 	jobsFinished=0;
-	results = allocate(HASH_RANGE_1*sizeof(struct Vector*),"joinInterInter");
+	results = malloc(HASH_RANGE_1*sizeof(struct Vector*));
+	MALLOC_CHECK(results);
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		createVector(results+i,left->tupleSize+right->tupleSize);
 
@@ -349,7 +357,8 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 
 	// Update mapRels and interResults //
 	// Construct new mapping
-	unsigned *newMap = allocate(inter->queryRelations*sizeof(unsigned),"joinInterInter");
+	unsigned *newMap = malloc(inter->queryRelations*sizeof(unsigned));
+	MALLOC_CHECK(newMap);
 	for(unsigned i=0;i<inter->queryRelations;++i)
 		newMap[i] = left->map[i];
 

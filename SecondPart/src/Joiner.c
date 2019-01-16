@@ -14,7 +14,8 @@ unsigned HASH_RANGE_1;
 
 void createJoiner(struct Joiner **joiner)
 {
-	*joiner = allocate(sizeof(struct Joiner),"createJoiner");
+	*joiner = malloc(sizeof(struct Joiner));
+	MALLOC_CHECK(*joiner);
 	(*joiner)->numOfRelations = 0;
 	(*joiner)->relations      = NULL;
 }
@@ -22,7 +23,8 @@ void createJoiner(struct Joiner **joiner)
 void setup(struct Joiner *joiner)
 {
 	/* Contains all file names : "r0\nr1\nr2\n....r20\n" */
-	char *buffer   = allocate(BUFFERSIZE*sizeof(char),"setup(..)-buffer");
+	char *buffer   = malloc(BUFFERSIZE*sizeof(char));
+	MALLOC_CHECK(buffer);
 	char *allNames = buffer;
 
 	/* We assume that file name will be at most 18[do not forget '\n' and '\0'] characters long */
@@ -39,7 +41,8 @@ void setup(struct Joiner *joiner)
 	}
 
 	/* Allocate space to store relations */
-	joiner->relations = allocate(joiner->numOfRelations*sizeof(struct Relation*),"setup");
+	joiner->relations = malloc(joiner->numOfRelations*sizeof(struct Relation*));
+	MALLOC_CHECK(joiner->relations);
 
 	/* Add realation corresponding to the fileName scanned from allNames */
 	int offset;

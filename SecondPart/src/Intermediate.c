@@ -15,14 +15,19 @@
 
 void createInterMetaData(struct InterMetaData **inter,struct QueryInfo *q)
 {
-	*inter                    = allocate(sizeof(struct InterMetaData),"createInterMetaData-1st");
+	*inter                    = malloc(sizeof(struct InterMetaData));
+	MALLOC_CHECK(*inter);
 	(*inter)->maxNumOfVectors = getNumOfFilters(q) + getNumOfColEqualities(q) + getNumOfJoins(q);
-	(*inter)->interResults    = allocate((*inter)->maxNumOfVectors*sizeof(struct Vector**),"createInterMetaData-2nd");
-	(*inter)->mapRels         = allocate((*inter)->maxNumOfVectors*sizeof(unsigned*),"createInterMetaData-3rd");
+	(*inter)->interResults    = malloc((*inter)->maxNumOfVectors*sizeof(struct Vector**));
+	MALLOC_CHECK((*inter)->interResults);
+
+	(*inter)->mapRels         = malloc((*inter)->maxNumOfVectors*sizeof(unsigned*));
+	MALLOC_CHECK((*inter)->mapRels );
 	(*inter)->queryRelations  = getNumOfRelations(q);
 
 	for(unsigned i=0;i<(*inter)->maxNumOfVectors;++i){
-		(*inter)->interResults[i] = allocate(HASH_RANGE_1*sizeof(struct Vector*),"createInterMetaData-4th");
+		(*inter)->interResults[i] = malloc(HASH_RANGE_1*sizeof(struct Vector*));
+		MALLOC_CHECK((*inter)->interResults[i]);
 		for(unsigned v=0;v<HASH_RANGE_1;++v)
 			(*inter)->interResults[i][v] = NULL;
 		(*inter)->mapRels[i] = NULL;
@@ -56,7 +61,8 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 			{
 				// fprintf(stderr, "Column Equality\n");
 				// printf("%u.%u=%u.%u [r%u.tbl]\n",relId,leftColId,relId,rightColId,original);
-				unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyColumnEqualities");
+				unsigned *values = malloc(inter->queryRelations*sizeof(unsigned));
+				MALLOC_CHECK(values);
 				for(unsigned i=0;i<inter->queryRelations;++i)
 					values[i] = (i==relId) ? 0 : -1;
 				createMap(&inter->mapRels[pos],inter->queryRelations,values);
@@ -88,7 +94,8 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 		else
 		{
 			// Create map array [0 in every place except for the relId-th place]
-			unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyFilters");
+			unsigned *values = malloc(inter->queryRelations*sizeof(unsigned));
+			MALLOC_CHECK(values);
 			for(unsigned i=0;i<inter->queryRelations;++i)
 				values[i] = (i==relId) ? 0 : -1;
 			createMap(&inter->mapRels[pos],inter->queryRelations,values);
@@ -200,7 +207,8 @@ unsigned getFirstAvailablePos(struct InterMetaData* inter)
 void createMap(unsigned **mapRels,unsigned size,unsigned *values)
 {
 	// -1 unsigned = 4294967295 [Hopefully we won't have to deal with so many relations]
-	*mapRels = allocate(size*sizeof(unsigned),"createMap");
+	*mapRels = malloc(size*sizeof(unsigned));
+	MALLOC_CHECK(*mapRels);
 	for(unsigned j=0;j<size;++j)
 		(*mapRels)[j] = values[j];
 }

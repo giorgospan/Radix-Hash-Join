@@ -7,9 +7,10 @@
 void createQueue(struct Queue **q, int size)
 {
 	/* Dynamic */
-	*q          = allocate(sizeof(struct Queue),"createQueue1");
-	(*q)->array = allocate(sizeof(int) * size,"createQueue2");
-
+	*q          = malloc(sizeof(struct Queue));
+	MALLOC_CHECK(*q);
+	(*q)->array = malloc(sizeof(int) * size);
+	MALLOC_CHECK((*q)->array);
 
 	/* Data for ds */
 	(*q)->size = size;

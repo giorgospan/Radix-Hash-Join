@@ -7,7 +7,8 @@
 
 void createQueryInfo(struct QueryInfo **qInfo,char *rawQuery)
 {
-	*qInfo = allocate(sizeof(struct QueryInfo),"createQueryInfo");
+	*qInfo = malloc(sizeof(struct QueryInfo));
+	MALLOC_CHECK(*qInfo);
 	parseQuery(*qInfo,rawQuery);
 }
 
@@ -59,7 +60,8 @@ void parseRelationIds(struct QueryInfo *qInfo,char *rawRelations)
 	}
 
 	/* Allocate memory for relationIds */
-	qInfo->relationIds = allocate(qInfo->numOfRelationIds*sizeof(unsigned),"parseRelationIds");
+	qInfo->relationIds = malloc(qInfo->numOfRelationIds*sizeof(unsigned));
+	MALLOC_CHECK(qInfo->relationIds);
 
 	/* Store relationIds */
 	temp = rawRelations;
@@ -92,7 +94,8 @@ void parseSelections(struct QueryInfo *qInfo,char *rawSelections)
 	}
 
 	/* Allocate memory for selections */
-	qInfo->selections = allocate(qInfo->numOfSelections*sizeof(struct SelectInfo),"parseSelections");
+	qInfo->selections = malloc(qInfo->numOfSelections*sizeof(struct SelectInfo));
+	MALLOC_CHECK(qInfo->selections);
 
 	/*  Store selections */
 	temp = rawSelections;
@@ -111,6 +114,7 @@ void parsePredicates(struct QueryInfo *qInfo,char *rawPredicates)
 	unsigned i,j;
 	char *token;
 	char *temp = malloc((strlen(rawPredicates)+1)*sizeof(char));
+	MALLOC_CHECK(temp);
 	strcpy(temp,rawPredicates);
 
 	/* Get number of predicates and filters */
@@ -134,8 +138,10 @@ void parsePredicates(struct QueryInfo *qInfo,char *rawPredicates)
 	}
 
 	/* Allocate memory for predicates and filters */
-	qInfo->predicates = allocate(qInfo->numOfPredicates*sizeof(struct PredicateInfo),"parsePredicates - join predicates");
-	qInfo->filters    = allocate(qInfo->numOfFilters*sizeof(struct FilterInfo),"parsePredicates - filters");
+	qInfo->predicates = malloc(qInfo->numOfPredicates*sizeof(struct PredicateInfo));
+	MALLOC_CHECK(qInfo->predicates);
+	qInfo->filters    = malloc(qInfo->numOfFilters*sizeof(struct FilterInfo));
+	MALLOC_CHECK(qInfo->filters);
 
 	/* Store predicates & filters */
 	strcpy(temp,rawPredicates);

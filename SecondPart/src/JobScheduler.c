@@ -5,7 +5,7 @@
 #include <time.h> /*time()--debugging*/
 #include <pthread.h>
 
-#include "Utils.h" /*allocate()*/
+#include "Utils.h"
 #include "JobScheduler.h"
 #include "Joiner.h"
 #include "Partition.h"
@@ -14,7 +14,7 @@
 #include "Operations.h"
 #include "Queue.h"
 
-#define THREAD_NUM 4
+#define THREAD_NUM 6
 
 pthread_mutex_t queueMtx           = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t jobsFinishedMtx    = PTHREAD_MUTEX_INITIALIZER;
@@ -28,9 +28,11 @@ pthread_barrier_t barrier;
 
 void createJobScheduler(struct JobScheduler** js){
 
-  *js              = allocate(sizeof(struct JobScheduler),"createJobScheduler1");
+  *js              = malloc(sizeof(struct JobScheduler));
+  MALLOC_CHECK(*js);
   (*js)->threadNum = THREAD_NUM;
-  (*js)->tids      = allocate((*js)->threadNum*sizeof(pthread_t),"createJobScheduler2");
+  (*js)->tids      = malloc((*js)->threadNum*sizeof(pthread_t));
+  MALLOC_CHECK((*js)->tids);
 
   // Create Queue with 1000 jobs max size
   createQueue(&jobQueue,1000);
@@ -50,6 +52,7 @@ void createJobScheduler(struct JobScheduler** js){
 
   /* Initialize partition mutex array */
   partitionMtxArray = malloc(HASH_RANGE_1*sizeof(pthread_mutex_t));
+  MALLOC_CHECK(partitionMtxArray);
   for(unsigned i=0;i<HASH_RANGE_1;++i)
     pthread_mutex_init(partitionMtxArray+i,NULL);
 
@@ -64,59 +67,78 @@ void createJobArrays(struct JobScheduler* js){
 
   /* Create array with checkSums */
   js->checkSumArray = malloc(HASH_RANGE_1*sizeof(uint64_t));
+  MALLOC_CHECK(js->checkSumArray);
 
   /* Create array with  histograms */
   js->histArray = malloc(js->threadNum*sizeof(unsigned*));
+  MALLOC_CHECK(js->histArray);
   for(unsigned i=0;i<js->threadNum;++i)
+  {
     js->histArray[i] = malloc(HASH_RANGE_1*sizeof(unsigned));
+    MALLOC_CHECK(js->histArray[i]);
+  }
 
   /* Create array with histogram jobs */
   js->histJobs = malloc(js->threadNum*sizeof(struct Job));
+  MALLOC_CHECK(js->histJobs);
   for(unsigned i=0;i<js->threadNum;++i){
     js->histJobs[i].argument                                = malloc(sizeof(struct histArg));
+    MALLOC_CHECK(js->histJobs[i].argument);
     ((struct histArg *)js->histJobs[i].argument)->histogram = js->histArray[i];
     js->histJobs[i].function 	                              = histFunc;
   }
 
   /* Create array with partition jobs */
   js->partitionJobs = malloc(js->threadNum*sizeof(struct Job));
+  MALLOC_CHECK(js->partitionJobs);
   for(unsigned i=0;i<js->threadNum;++i){
     js->partitionJobs[i].argument  = malloc(sizeof(struct partitionArg));
+    MALLOC_CHECK(js->partitionJobs[i].argument);
     js->partitionJobs[i].function = partitionFunc;
   }
 
   /* Create array with build jobs */
   js->buildJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
+  MALLOC_CHECK(js->buildJobs);
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->buildJobs[i].argument = malloc(sizeof(struct buildArg));
+    MALLOC_CHECK(js->buildJobs[i].argument);
     js->buildJobs[i].function = buildFunc;
   }
 
   /* Create array with join jobs */
   js->joinJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
+  MALLOC_CHECK(js->joinJobs);
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->joinJobs[i].argument = malloc(sizeof(struct joinArg));
+    MALLOC_CHECK(js->joinJobs[i].argument);
     js->joinJobs[i].function = joinFunc;
   }
 
   /* Create array with columnEquality jobs */
   js->colEqualityJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
+  MALLOC_CHECK(js->colEqualityJobs);
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->colEqualityJobs[i].argument = malloc(sizeof(struct colEqualityArg));
+    MALLOC_CHECK(js->colEqualityJobs[i].argument);
     js->colEqualityJobs[i].function = colEqualityFunc;
   }
 
   /* Create array with filter jobs */
   js->filterJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
+  MALLOC_CHECK(js->filterJobs);
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->filterJobs[i].argument = malloc(sizeof(struct filterArg));
+    MALLOC_CHECK(js->filterJobs[i].argument);
     js->filterJobs[i].function = filterFunc;
   }
 
   /* Create array with checksum jobs */
   js->checkSumJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
+  MALLOC_CHECK(js->checkSumJobs);
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->checkSumJobs[i].argument = malloc(sizeof(struct checkSumArg));
+    MALLOC_CHECK(js->checkSumJobs[i].argument);
     js->checkSumJobs[i].function = checkSumFunc;
   }
 }

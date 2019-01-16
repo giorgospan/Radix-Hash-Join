@@ -36,7 +36,7 @@ void testAddRelation(void)
 	createJoiner(&J);
 	const int NUM_OF_RELS = 13;
 	J->numOfRelations     = NUM_OF_RELS;
-	J->relations          = allocate(J->numOfRelations*sizeof(struct Relation*),"testAddRelation");
+	J->relations          = malloc(J->numOfRelations*sizeof(struct Relation*),"testAddRelation");
 	
 	for(unsigned i=0;i<NUM_OF_RELS;++i)
 	{

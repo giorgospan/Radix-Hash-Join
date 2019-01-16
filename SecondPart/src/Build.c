@@ -98,9 +98,11 @@ void initializeIndexArray(RadixHashJoinInfo *info)
 	unsigned i,j;
 	unsigned bucketSize;
 
-	/* Firstly, we need to allocate space for indexArray */
+	/* Firstly, we need to malloc space for indexArray */
 	/* Remember: One struct Index per bucket */
-	info->indexArray = allocate(HASH_RANGE_1*sizeof(struct Index*),"initializeIndexArray1");
+	info->indexArray = malloc(HASH_RANGE_1*sizeof(struct Index*));
+	MALLOC_CHECK(info->indexArray);
+
 
 	// For every bucket
 	for(i=0;i<HASH_RANGE_1;i++)
@@ -116,13 +118,15 @@ void initializeIndexArray(RadixHashJoinInfo *info)
 			bucketSize = info->hist[i];
 
 			/* Allocate space for bucket's index */
-			info->indexArray[i] = allocate(sizeof(struct Index),"initializeIndexArray2");
+			info->indexArray[i] = malloc(sizeof(struct Index));
+			MALLOC_CHECK(info->indexArray[i]);
 
 
 			/* Allocate space for index's fields */
- 			info->indexArray[i]->chainArray  = allocate(bucketSize*sizeof(unsigned),"initializeIndexArray3");
-			info->indexArray[i]->bucketArray = allocate(HASH_RANGE_2*sizeof(unsigned),"initializeIndexArray4");
-
+ 			info->indexArray[i]->chainArray  = malloc(bucketSize*sizeof(unsigned));
+			MALLOC_CHECK(info->indexArray[i]->chainArray);
+			info->indexArray[i]->bucketArray = malloc(HASH_RANGE_2*sizeof(unsigned));
+			MALLOC_CHECK(info->indexArray[i]->bucketArray);
 
 			/* Initialize chainArray and bucketArray with 0's */
 			for(j=0;j<bucketSize;j++)

@@ -15,7 +15,8 @@
 
 void createRelation(struct Relation **rel,char *fileName)
 {
-	*rel = allocate(sizeof(struct Relation),"createRelation");
+	*rel = malloc(sizeof(struct Relation));
+	MALLOC_CHECK(*rel);
 	(*rel)->columns = NULL;
 	loadRelation(*rel,fileName);
 }
@@ -57,7 +58,8 @@ void loadRelation(struct Relation *rel,char *fileName)
 	rel->numOfCols = *((uint64_t*) addr);
 	addr+=sizeof((uint64_t)rel->numOfCols);
 
-	rel->columns = allocate(rel->numOfCols*sizeof(uint64_t*),"loadRelation-columns array");
+	rel->columns = malloc(rel->numOfCols*sizeof(uint64_t*));
+	MALLOC_CHECK(rel->columns);
 
 	/* Map every relation's column to rel->columns array */
 	for (unsigned i=0;i<rel->numOfCols;++i)

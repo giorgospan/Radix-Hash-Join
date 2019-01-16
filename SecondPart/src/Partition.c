@@ -85,13 +85,26 @@ void partitionFunc(void* arg)
 
 void partition(RadixHashJoinInfo *info)
 {
-	info->unsorted         = allocate(sizeof(ColumnInfo),"partition1");
-	info->unsorted->values = allocate(info->numOfTuples*sizeof(uint64_t),"partition2");
-	info->unsorted->rowIds = allocate(info->numOfTuples*sizeof(unsigned),"partition3");
-  info->sorted           = allocate(sizeof(ColumnInfo),"partition4");
-  info->sorted->values   = allocate(info->numOfTuples*sizeof(uint64_t),"partition5");
-  info->sorted->rowIds   = allocate(info->numOfTuples*sizeof(unsigned),"partition6");
-	info->indexArray       = NULL;
+	info->unsorted         = malloc(sizeof(ColumnInfo));
+  MALLOC_CHECK(info->unsorted);
+
+  info->unsorted->values = malloc(info->numOfTuples*sizeof(uint64_t));
+  MALLOC_CHECK(info->unsorted->values);
+
+  info->unsorted->rowIds = malloc(info->numOfTuples*sizeof(unsigned));
+  MALLOC_CHECK(info->unsorted->rowIds);
+
+  info->sorted           = malloc(sizeof(ColumnInfo));
+  MALLOC_CHECK(info->sorted);
+
+  info->sorted->values   = malloc(info->numOfTuples*sizeof(uint64_t));
+  MALLOC_CHECK(info->sorted->values);
+
+  info->sorted->rowIds   = malloc(info->numOfTuples*sizeof(unsigned));
+  MALLOC_CHECK(info->sorted->rowIds);
+
+  info->indexArray       = NULL;
+
   createVectorFixedSize(&info->sorted->tuples,info->tupleSize,info->numOfTuples);
 
 	createVector(&info->unsorted->tuples,info->tupleSize);
@@ -101,7 +114,8 @@ void partition(RadixHashJoinInfo *info)
 		scanJoin(info);
 
 	// Create our main histogram
-	info->hist = allocate(HASH_RANGE_1*sizeof(unsigned),"partition7");
+	info->hist = malloc(HASH_RANGE_1*sizeof(unsigned));
+  MALLOC_CHECK(info->hist);
 
 
 #if PARALLEL_HISTOGRAM
@@ -155,7 +169,8 @@ void partition(RadixHashJoinInfo *info)
 
   // Calculate Prefix Sum
 	unsigned sum = 0;
-	info->pSum   = allocate(HASH_RANGE_1*sizeof(unsigned),"partition8");
+	info->pSum   = malloc(HASH_RANGE_1*sizeof(unsigned));
+  MALLOC_CHECK(info->pSum);
 
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		info->pSum[i] = 0;
@@ -167,6 +182,7 @@ void partition(RadixHashJoinInfo *info)
 	}
 
   unsigned *pSumCopy   = malloc(HASH_RANGE_1*sizeof(unsigned));
+  MALLOC_CHECK(pSumCopy);
   for(unsigned i=0;i<HASH_RANGE_1;++i)
     pSumCopy[i] = info->pSum[i];
 

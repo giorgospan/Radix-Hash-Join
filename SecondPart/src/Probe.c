@@ -36,10 +36,8 @@ void joinFunc(void *arg){
 
 	unsigned *tupleToInsert;
 	unsigned tupleSize  = small->tupleSize+big->tupleSize;
-	if(  (tupleToInsert = malloc(tupleSize*sizeof(unsigned))) == NULL   ){
-		fprintf(stderr,"malloc failed[checkEqual]: %s\nExiting...\n\n",strerror(errno));
-		exit(EXIT_FAILURE);
-	}
+	tupleToInsert = malloc(tupleSize*sizeof(unsigned));
+	MALLOC_CHECK(tupleToInsert);
 
 	/* For every tuple(i.e:record) in the big relation */
 	for(i=tStart;i<tEnd;i++)
@@ -118,11 +116,8 @@ void probe(RadixHashJoinInfo *left,RadixHashJoinInfo *right,struct Vector *resul
 
 	unsigned *tupleToInsert;
 	unsigned tupleSize  = small->tupleSize+big->tupleSize;
-	if(  (tupleToInsert = malloc(tupleSize*sizeof(unsigned))) == NULL   ){
-		fprintf(stderr,"malloc failed[checkEqual]: %s\nExiting...\n\n",strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
+	tupleToInsert = malloc(tupleSize*sizeof(unsigned));
+	MALLOC_CHECK(tupleToInsert);
 
 	/* For every tuple(i.e:record) in the big relation */
 	for(i=0;i<big->numOfTuples;i++)

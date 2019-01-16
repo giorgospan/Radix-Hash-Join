@@ -12,7 +12,8 @@ unsigned initSize;
 
 void createVector(struct Vector **vector,unsigned tupleSize)
 {
-	*vector              = allocate(sizeof(struct Vector),"createVector");
+	*vector              = malloc(sizeof(struct Vector));
+	MALLOC_CHECK(*vector);
 	(*vector)->table     = NULL;
 	(*vector)->tupleSize = tupleSize;
 	(*vector)->nextPos   = 0;
@@ -21,10 +22,12 @@ void createVector(struct Vector **vector,unsigned tupleSize)
 
 void createVectorFixedSize(struct Vector **vector,unsigned tupleSize,unsigned fixedSize)
 {
-	*vector              = allocate(sizeof(struct Vector),"createVectorFixedSize1");
+	*vector              = malloc(sizeof(struct Vector));
+	MALLOC_CHECK(*vector);
 	(*vector)->capacity  = tupleSize*fixedSize;
 	(*vector)->tupleSize = tupleSize;
-	(*vector)->table     = allocate((*vector)->capacity *sizeof(unsigned),"createVectorFixedSize2");
+	(*vector)->table     = malloc((*vector)->capacity *sizeof(unsigned));
+	MALLOC_CHECK((*vector)->table);
 	(*vector)->nextPos   = 0;
 }
 
@@ -36,10 +39,11 @@ void insertAtVector(struct Vector *vector,unsigned *tuple)
 		/* initSize is initialized according to avgNumOfTuples of the given relations */
 		/* check Joiner.c */
 		vector->capacity = initSize*vector->tupleSize;
-		vector->table    = allocate(vector->capacity*sizeof(unsigned),"insertAtVector");
+		vector->table    = malloc(vector->capacity*sizeof(unsigned));
+		MALLOC_CHECK(vector->table);
 	}
 
-	/* Else if vector is full, reallocate more space */
+	/* Else if vector is full, remalloc more space */
 	else if(vectorIsFull(vector))
 	{
 		vector->capacity*=2;
