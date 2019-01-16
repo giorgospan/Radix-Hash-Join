@@ -72,6 +72,18 @@ void filter(uint64_t *col,Comparison cmp,uint64_t constant,unsigned numOfTuples,
 			insertAtVector(*vector,&i);
 }
 
+void filterFunc(void *arg){
+	struct filterArg *myarg = arg;
+	createVector(myarg->vector,1);
+	for(unsigned i=myarg->start;i<myarg->end;++i)
+		if(compare(myarg->col[i],myarg->cmp,myarg->constant))
+			insertAtVector(*myarg->vector,&i);
+	pthread_mutex_lock(&jobsFinishedMtx);
+	++jobsFinished;
+	pthread_cond_signal(&condJobsFinished);
+	pthread_mutex_unlock(&jobsFinishedMtx);
+}
+
 void filterInter(uint64_t *col,Comparison cmp,uint64_t constant,struct Vector **vector)
 {
 	/* Hold the old vector */
@@ -97,7 +109,6 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	build(left,right);
 	left->isLeft  = 1;
 	right->isLeft = 0;
-
 
 	// Probe
 	struct Vector **results;
@@ -148,9 +159,9 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	// Attach the new ones to first available position
 	unsigned pos                = getFirstAvailablePos(inter);
 	inter->mapRels[pos]         = newMap;
-	for(unsigned i=0;i<HASH_RANGE_1;++i){
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		inter->interResults[pos][i] = results[i];
-	}
+
 	free(results);
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
@@ -216,9 +227,9 @@ void joinNonInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	// Attach the new ones to first available position
 	unsigned pos                = getFirstAvailablePos(inter);
 	inter->mapRels[pos]         = newMap;
-	for(unsigned i=0;i<HASH_RANGE_1;++i){
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		inter->interResults[pos][i] = results[i];
-	}
+
 	free(results);
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);
@@ -284,11 +295,8 @@ void joinInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Radix
 	// Attach the new ones to first available position
 	unsigned pos                = getFirstAvailablePos(inter);
 	inter->mapRels[pos]         = newMap;
-	unsigned cnt=0;
-	for(unsigned i=0;i<HASH_RANGE_1;++i){
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		inter->interResults[pos][i] = results[i];
-		cnt+= getVectorTuples(results[i]);
-	}
 
 	free(results);
 	destroyRadixHashJoinInfo(left);
@@ -363,9 +371,9 @@ void joinInterInter(struct InterMetaData *inter,RadixHashJoinInfo* left,RadixHas
 	// Attach the new ones to first available position
 	unsigned pos                = getFirstAvailablePos(inter);
 	inter->mapRels[pos]         = newMap;
-	for(unsigned i=0;i<HASH_RANGE_1;++i){
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
 		inter->interResults[pos][i] = results[i];
-	}
+
 	free(results);
 	destroyRadixHashJoinInfo(left);
 	destroyRadixHashJoinInfo(right);

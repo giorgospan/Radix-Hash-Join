@@ -14,7 +14,7 @@ struct columnStats
 	uint64_t minValue;
 	uint64_t maxValue;
 	uint64_t f;
-	uint64_t dicreteValues;
+	uint64_t discreteValues;
 	char *booleanArray;
 	uint64_t sizeOfBooleanArray;
 	char typeOfBooleanArray;

@@ -3,13 +3,13 @@
 
 /* Mutexes - conditional variables - barriers */
 extern pthread_mutex_t queueMtx;
-extern pthread_mutex_t partitionMtx;
 extern pthread_mutex_t jobsFinishedMtx;
 extern pthread_cond_t condNonEmpty;
 extern pthread_cond_t condJobsFinished;
 extern pthread_barrier_t barrier;
 extern struct JobScheduler* js;
 extern unsigned jobsFinished;
+extern pthread_mutex_t* partitionMtxArray;
 
 
 /* Job queue */
@@ -22,8 +22,6 @@ struct Job{
   // Argument passed to the function
   void *argument;
 };
-
-
 
 struct JobScheduler{
     // number of worker threads
@@ -41,6 +39,7 @@ struct JobScheduler{
     struct Job *buildJobs;
     struct Job *joinJobs;
     struct Job *colEqualityJobs;
+    struct Job *filterJobs;
     struct Job *checkSumJobs;
 };
 

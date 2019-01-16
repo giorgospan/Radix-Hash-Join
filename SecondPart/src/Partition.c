@@ -12,6 +12,8 @@
 #include "Utils.h"
 #include "Vector.h"
 
+#define PARALLEL_PARTITION 0
+#define PARALLEL_HISTOGRAM 0
 
 void histFunc(void* arg)
 {
@@ -52,7 +54,7 @@ void partitionFunc(void* arg)
 
 		/* Go to pSumCopy and find where we need to place it in sorted column  */
 		unsigned offset;
-    pthread_mutex_lock(&partitionMtx);
+    pthread_mutex_lock(&partitionMtxArray[h]);
 		offset = myarg->pSumCopy[h];
 
 
@@ -72,7 +74,7 @@ void partitionFunc(void* arg)
 			myarg->info->sorted->rowIds[offset] = i;
 			insertAtPos(myarg->info->sorted->tuples,&i,offset);
 		}
-    pthread_mutex_unlock(&partitionMtx);
+    pthread_mutex_unlock(&partitionMtxArray[h]);
 	}
   // clock_gettime(CLOCK_MONOTONIC, &finish);
   // elapsed = (finish.tv_sec - start.tv_sec);
@@ -101,42 +103,45 @@ void partition(RadixHashJoinInfo *info)
 	// Create our main histogram
 	info->hist = allocate(HASH_RANGE_1*sizeof(unsigned),"partition7");
 
+
+#if PARALLEL_HISTOGRAM
 	// Enqueue histogram jobs
-	// unsigned chunkSize = info->numOfTuples / js->threadNum;
-	// unsigned lastEnd = 0;
-	// unsigned i;
-	// for(i=0;i<js->threadNum-1;++i)
-	// {
-	// 	struct histArg *arg = js->histJobs[i].argument;
-	// 	arg->start          = i*chunkSize;
-	// 	arg->end            = arg->start + chunkSize;
-	// 	arg->values         = (info->isInInter) ? info->unsorted->values : info->col;
-	// 	pthread_mutex_lock(&queueMtx);
-	// 	enQueue(jobQueue,&js->histJobs[i]);
-	// 	pthread_cond_signal(&condNonEmpty);
-	// 	pthread_mutex_unlock(&queueMtx);
-	// 	lastEnd = arg->end;
-	// }
-	// // Remaining values, in case numOfTuples could not be divided exactly between the threads
-	// struct histArg *arg = js->histJobs[i].argument;
-	// arg->start          = lastEnd;
-	// arg->end            = info->numOfTuples;
-	// arg->values         = (info->isInInter) ? info->unsorted->values : info->col;
-	// pthread_mutex_lock(&queueMtx);
-	// enQueue(jobQueue,&js->histJobs[i]);
-	// pthread_cond_signal(&condNonEmpty);
-	// pthread_mutex_unlock(&queueMtx);
-  //
-	// // Wait until all threads are done
-	// pthread_barrier_wait(&barrier);
-  //
-	// // Merge the partial histograms
-	// for(unsigned i=0;i<HASH_RANGE_1;++i)
-	// 	info->hist[i] = 0;
-  //
-	// for(unsigned t=0;t<js->threadNum;++t)
-	// 	for(unsigned h=0;h<HASH_RANGE_1;++h)
-	// 		info->hist[h]+=js->histArray[t][h];
+	unsigned chunkSize = info->numOfTuples / js->threadNum;
+	unsigned lastEnd = 0;
+	unsigned i;
+	for(i=0;i<js->threadNum-1;++i)
+	{
+		struct histArg *arg = js->histJobs[i].argument;
+		arg->start          = i*chunkSize;
+		arg->end            = arg->start + chunkSize;
+		arg->values         = (info->isInInter) ? info->unsorted->values : info->col;
+		pthread_mutex_lock(&queueMtx);
+		enQueue(jobQueue,&js->histJobs[i]);
+		pthread_cond_signal(&condNonEmpty);
+		pthread_mutex_unlock(&queueMtx);
+		lastEnd = arg->end;
+	}
+	// Remaining values, in case numOfTuples could not be divided exactly between the threads
+	struct histArg *arg = js->histJobs[i].argument;
+	arg->start          = lastEnd;
+	arg->end            = info->numOfTuples;
+	arg->values         = (info->isInInter) ? info->unsorted->values : info->col;
+	pthread_mutex_lock(&queueMtx);
+	enQueue(jobQueue,&js->histJobs[i]);
+	pthread_cond_signal(&condNonEmpty);
+	pthread_mutex_unlock(&queueMtx);
+
+	// Wait until all threads are done
+	pthread_barrier_wait(&barrier);
+
+	// Merge the partial histograms
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+		info->hist[i] = 0;
+
+	for(unsigned t=0;t<js->threadNum;++t)
+		for(unsigned h=0;h<HASH_RANGE_1;++h)
+			info->hist[h]+=js->histArray[t][h];
+#else
 
   for(unsigned i=0;i<HASH_RANGE_1;++i)
   info->hist[i] = 0;
@@ -146,6 +151,7 @@ void partition(RadixHashJoinInfo *info)
   	info->hist[HASH_FUN_1(info->unsorted->values[i])] += 1;
   else
   	info->hist[HASH_FUN_1(info->col[i])] += 1;
+#endif
 
   // Calculate Prefix Sum
 	unsigned sum = 0;
@@ -164,34 +170,35 @@ void partition(RadixHashJoinInfo *info)
   for(unsigned i=0;i<HASH_RANGE_1;++i)
     pSumCopy[i] = info->pSum[i];
 
-	// lastEnd = 0;
-	// for(i=0;i<js->threadNum-1;++i)
-	// {
-	// 	struct partitionArg *arg = js->partitionJobs[i].argument;
-	// 	arg->start               = i*chunkSize;
-	// 	arg->end                 = arg->start + chunkSize;
-  //   arg->pSumCopy            = pSumCopy;
-  //   arg->info                = info;
-	// 	pthread_mutex_lock(&queueMtx);
-	// 	enQueue(jobQueue,&js->partitionJobs[i]);
-	// 	pthread_cond_signal(&condNonEmpty);
-	// 	pthread_mutex_unlock(&queueMtx);
-	// 	lastEnd = arg->end;
-	// }
-	// // Remaining values, in case numOfTuples could not be divided exactly between the threads
-  // struct partitionArg *pArg = js->partitionJobs[i].argument;
-  // pArg->start               = lastEnd;
-	// pArg->end                 = info->numOfTuples;
-  // pArg->pSumCopy            = pSumCopy;
-  // pArg->info                = info;
-	// pthread_mutex_lock(&queueMtx);
-	// enQueue(jobQueue,&js->partitionJobs[i]);
-	// pthread_cond_signal(&condNonEmpty);
-	// pthread_mutex_unlock(&queueMtx);
-  //
-	// // Wait until all threads are done
-	// pthread_barrier_wait(&barrier);
+#if PARALLEL_PARTITION
+	lastEnd = 0;
+	for(i=0;i<js->threadNum-1;++i)
+	{
+		struct partitionArg *arg = js->partitionJobs[i].argument;
+		arg->start               = i*chunkSize;
+		arg->end                 = arg->start + chunkSize;
+    arg->pSumCopy            = pSumCopy;
+    arg->info                = info;
+		pthread_mutex_lock(&queueMtx);
+		enQueue(jobQueue,&js->partitionJobs[i]);
+		pthread_cond_signal(&condNonEmpty);
+		pthread_mutex_unlock(&queueMtx);
+		lastEnd = arg->end;
+	}
+	// Remaining values, in case numOfTuples could not be divided exactly between the threads
+  struct partitionArg *pArg = js->partitionJobs[i].argument;
+  pArg->start               = lastEnd;
+	pArg->end                 = info->numOfTuples;
+  pArg->pSumCopy            = pSumCopy;
+  pArg->info                = info;
+	pthread_mutex_lock(&queueMtx);
+	enQueue(jobQueue,&js->partitionJobs[i]);
+	pthread_cond_signal(&condNonEmpty);
+	pthread_mutex_unlock(&queueMtx);
 
+	// Wait until all threads are done
+	pthread_barrier_wait(&barrier);
+#else
 
   for(unsigned i=0;i<info->numOfTuples;++i)
 	{
@@ -225,5 +232,6 @@ void partition(RadixHashJoinInfo *info)
 			insertAtPos(info->sorted->tuples,&i,offset);
 		}
 	}
+#endif
   free(pSumCopy);
 }

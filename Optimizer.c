@@ -49,7 +49,7 @@ void findStats(uint64_t *column, struct columnStats *stat, uint64_t columnSize)
 			min = column[i];
 	}
 
-	/* Find dicrete values */
+	/* Find discrete values */
 	uint64_t sizeOfBooleanArray = (max - min + 1 > PRIMELIMIT) ? PRIMELIMIT : max - min + 1;
 	// fprintf(stderr, "Size of boolean array is  %lu\n", sizeOfBooleanArray);
 
@@ -68,7 +68,7 @@ void findStats(uint64_t *column, struct columnStats *stat, uint64_t columnSize)
 		for (uint64_t i = 0; i < columnSize; ++i)
 		{
 			if (stat->booleanArray[column[i] - min] == 0)
-				(stat->dicreteValues)++;
+				(stat->discreteValues)++;
 			stat->booleanArray[column[i] - min] = 1;
 		}
 	}
@@ -78,7 +78,7 @@ void findStats(uint64_t *column, struct columnStats *stat, uint64_t columnSize)
 		for (uint64_t i = 0; i < columnSize; ++i)
 		{
 			if (stat->booleanArray[(column[i] - min) % PRIMELIMIT] == 0)
-				(stat->dicreteValues)++;
+				(stat->discreteValues)++;
 			stat->booleanArray[(column[i] - min) % PRIMELIMIT] = 1;
 		}
 	}
@@ -118,7 +118,7 @@ void printColumnStats(struct columnStats *s)
 	fprintf(stderr, "minValue: %lu\n", s->minValue);
 	fprintf(stderr, "maxValue: %lu\n", s->maxValue);
 	fprintf(stderr, "f: %lu\n", s->f);
-	fprintf(stderr, "dicreteValues: %lu\n", s->dicreteValues);
+	fprintf(stderr, "discreteValues: %lu\n", s->discreteValues);
 	printBooleanArray(s->booleanArray, s->sizeOfBooleanArray);
 	fprintf(stderr, "Size of boolean array is: %lu\n", s->sizeOfBooleanArray);
 	fprintf(stderr, "Type of boolean array is: %d\n", s->typeOfBooleanArray);
@@ -171,8 +171,8 @@ void applyFilterEstimations(struct QueryInfo *q, struct Joiner *jo)
 
 			// printRelation(jo->relations[relId]);
 			printColumnStats( (*(jo->relations[actualIdOfRelation])).colStats[colId] );
-			
-			/* Find if constant is in the dicrete values */
+
+			/* Find if constant is in the discrete values */
 			/* If constant is not in the range of values of the column we won't find it in the booleanArray */
 			if ( (constant < addresOfColumnStat->minValue) ||  (constant > addresOfColumnStat->maxValue) )
 				isInArray = 0;
@@ -198,13 +198,13 @@ void applyFilterEstimations(struct QueryInfo *q, struct Joiner *jo)
 			if (isInArray == 0)
 			{
 				addresOfColumnStat->f = 0;
-				addresOfColumnStat->dicreteValues = 0;
+				addresOfColumnStat->discreteValues = 0;
 			}
 			else
 			{
-				addresOfColumnStat->f = addresOfColumnStat->f / addresOfColumnStat->dicreteValues;
-				addresOfColumnStat->dicreteValues = 1;
-			}	
+				addresOfColumnStat->f = addresOfColumnStat->f / addresOfColumnStat->discreteValues;
+				addresOfColumnStat->discreteValues = 1;
+			}
 			printColumnStats(addresOfColumnStat);
 
 			// printColumnStats( (*(jo->relations[actualIdOfRelation])).colStats[colId] );
@@ -230,11 +230,11 @@ void applyFilterEstimations(struct QueryInfo *q, struct Joiner *jo)
 			/* Change the statistics  of the column */
 			addresOfColumnStat->minValue = k1;
 			addresOfColumnStat->maxValue = k2;
-			addresOfColumnStat->dicreteValues = ((k2 - k1) / (addresOfColumnStat->maxValue - addresOfColumnStat->minValue))
-			 * addresOfColumnStat->dicreteValues;
+			addresOfColumnStat->discreteValues = ((k2 - k1) / (addresOfColumnStat->maxValue - addresOfColumnStat->minValue))
+			 * addresOfColumnStat->discreteValues;
 			addresOfColumnStat->f = ((k2 - k1) / (addresOfColumnStat->maxValue - addresOfColumnStat->minValue))
 			 * addresOfColumnStat->f;
-				
+
 			printColumnStats(addresOfColumnStat);
 			/* REMOVE FOR FLOATING POINT EXCEPTION */
 			break;
@@ -258,16 +258,16 @@ void applyFilterEstimations(struct QueryInfo *q, struct Joiner *jo)
 			{
 				fprintf(stderr, "%s\n", "\n*********** UPDATE *********** \n");
 				printColumnStats(tempAddresOfColumnStat);
-				
-				fprintf(stderr, "%lu\n", tempAddresOfColumnStat->dicreteValues * (1 - 
-					power(1 - (1 - addresOfColumnStat->f / fTemp),
-					 tempAddresOfColumnStat->f / tempAddresOfColumnStat->dicreteValues)));
 
-				fprintf(stderr, "%lu\n", tempAddresOfColumnStat->dicreteValues);
-
-				tempAddresOfColumnStat->dicreteValues = tempAddresOfColumnStat->dicreteValues * (1 - 
+				fprintf(stderr, "%lu\n", tempAddresOfColumnStat->discreteValues * (1 -
 					power(1 - (1 - addresOfColumnStat->f / fTemp),
-					 tempAddresOfColumnStat->f / tempAddresOfColumnStat->dicreteValues));
+					 tempAddresOfColumnStat->f / tempAddresOfColumnStat->discreteValues)));
+
+				fprintf(stderr, "%lu\n", tempAddresOfColumnStat->discreteValues);
+
+				tempAddresOfColumnStat->discreteValues = tempAddresOfColumnStat->discreteValues * (1 -
+					power(1 - (1 - addresOfColumnStat->f / fTemp),
+					 tempAddresOfColumnStat->f / tempAddresOfColumnStat->discreteValues));
 				tempAddresOfColumnStat->f = addresOfColumnStat->f;
 				// fprintf(stderr, "%s\n", "EDWWWWWWWWWWWWWWWWWWWWWWWWWW EIMAIIIIIIIIIII" );
 				printColumnStats(tempAddresOfColumnStat);

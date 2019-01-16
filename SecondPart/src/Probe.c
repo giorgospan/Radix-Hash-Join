@@ -26,10 +26,6 @@ void joinFunc(void *arg){
 	int k;
 	struct Index *searchIndex;
 
-	// fprintf(stderr, "%u\n",right->isLeft);
-	// left->isLeft  = 1;
-	// right->isLeft = 0;
-
 	RadixHashJoinInfo *big,*small;
 	big   = left->isSmall ? right:left;
 	small = left->isSmall ? left:right;
@@ -45,15 +41,19 @@ void joinFunc(void *arg){
 		exit(EXIT_FAILURE);
 	}
 
-
 	/* For every tuple(i.e:record) in the big relation */
 	for(i=tStart;i<tEnd;i++)
 	{
 		/* The value we are gonna search for */
 		searchValue = big->sorted->values[i];
 
-		/* Find out in which bucket of the small relation
-			we should search --- No need, we already know that*/
+		/**
+		 * Find out in which bucket of the small relation
+		 * we should search.
+		 *
+		 * No need for that, as each thread is assigned
+		 * a specific bucket to work on.
+		 */
 		// searchBucket = HASH_FUN_1(searchValue);
 
 		/* Bucket is empty, there is nothing to search here */
@@ -95,7 +95,6 @@ void joinFunc(void *arg){
 	}
 	free(tupleToInsert);
 	pthread_mutex_lock(&jobsFinishedMtx);
-	// fprintf(stderr, "Thread[%u] working on bucket:%u | jobs already finished:%u\n",(unsigned)pthread_self(),myarg->bucket,jobsFinished);
 	++jobsFinished;
 	pthread_cond_signal(&condJobsFinished);
 	pthread_mutex_unlock(&jobsFinishedMtx);
@@ -192,7 +191,6 @@ void checkEqual(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned i,unsig
 
 	}
 }
-
 
 void constructTuple(RadixHashJoinInfo *small,RadixHashJoinInfo *big,unsigned actualRow,unsigned i,unsigned *target)
 {

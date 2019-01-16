@@ -34,6 +34,7 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 	for(unsigned i=0;i<q->numOfPredicates;++i)
 		if(isColEquality(&q->predicates[i]))
 		{
+
 			unsigned original      = getOriginalRelId(q,&q->predicates[i].left);
 			unsigned relId         = getRelId(&q->predicates[i].left);
 			unsigned leftColId     = getColId(&q->predicates[i].left);
@@ -53,6 +54,7 @@ void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,str
 			}
 			else
 			{
+				// fprintf(stderr, "Column Equality\n");
 				// printf("%u.%u=%u.%u [r%u.tbl]\n",relId,leftColId,relId,rightColId,original);
 				unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyColumnEqualities");
 				for(unsigned i=0;i<inter->queryRelations;++i)
@@ -75,7 +77,7 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 		uint64_t constant      = getConstant(&q->filters[i]);
 		Comparison cmp         = getComparison(&q->filters[i]);
 		unsigned pos           = getVectorPos(inter,relId);
-		struct Vector **vector = inter->interResults[pos]+0;
+		struct Vector **vector = inter->interResults[pos];
 		unsigned numOfTuples   = getRelationTuples(joiner,original);
 		uint64_t *col          = getColumn(joiner,original,colId);
 		if(isInInter(vector[0]))
@@ -85,18 +87,53 @@ void applyFilters(struct InterMetaData *inter,struct Joiner* joiner,struct Query
 		}
 		else
 		{
-			// fprintf(stderr,"%u.%u%c%lu [r%u.tbl]\n\n",relId,colId,cmp,constant,original);
-			unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyColumnEqualities");
+			// Create map array [0 in every place except for the relId-th place]
+			unsigned *values = allocate(inter->queryRelations*sizeof(unsigned),"applyFilters");
 			for(unsigned i=0;i<inter->queryRelations;++i)
 				values[i] = (i==relId) ? 0 : -1;
 			createMap(&inter->mapRels[pos],inter->queryRelations,values);
 			free(values);
-			filter(col,cmp,constant,numOfTuples,vector);
+
+			// Add filter jobs to the queue
+			jobsFinished = 0;
+			unsigned chunkSize = numOfTuples / HASH_RANGE_1;
+			unsigned lastEnd = 0;
+			unsigned i;
+			for(i=0;i<HASH_RANGE_1-1;++i){
+				struct filterArg *arg = js->filterJobs[i].argument;
+				arg->col              = col;
+				arg->constant         = constant;
+				arg->cmp							= cmp;
+				arg->start        		= i*chunkSize;
+				arg->end              = arg->start + chunkSize;
+				arg->vector           = vector+i;
+				lastEnd = arg->end;
+				pthread_mutex_lock(&queueMtx);
+				enQueue(jobQueue,&js->filterJobs[i]);
+				pthread_cond_signal(&condNonEmpty);
+				pthread_mutex_unlock(&queueMtx);
+			}
+			struct filterArg *arg = js->filterJobs[i].argument;
+			arg->col              = col;
+			arg->constant         = constant;
+			arg->cmp							= cmp;
+			arg->start        		= lastEnd;
+			arg->end              = numOfTuples;
+			arg->vector           = vector+i;
+			pthread_mutex_lock(&queueMtx);
+			enQueue(jobQueue,&js->filterJobs[i]);
+			pthread_cond_signal(&condNonEmpty);
+			pthread_mutex_unlock(&queueMtx);
+
+			// Wait for all filter jobs to finish
+			pthread_mutex_lock(&jobsFinishedMtx);
+			while (jobsFinished!=HASH_RANGE_1) {
+				pthread_cond_wait(&condJobsFinished,&jobsFinishedMtx);
+			}
+			jobsFinished = 0;
+			pthread_cond_signal(&condJobsFinished);
+			pthread_mutex_unlock(&jobsFinishedMtx);
 		}
-		// for(unsigned i=0;i<inter->queryRelations;++i){
-		// 	fprintf(stderr, "map[%u][%u]:%u\n",pos,i,inter->mapRels[pos][i]);
-		// }
-		// fprintf(stderr,"\n\n");
 	}
 }
 
@@ -188,12 +225,7 @@ void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct Que
 			printCheckSum(0,isLast);
 		else
 		{
-			// uint64_t allCheckSums=0;
-			// for(unsigned v=0;v<HASH_RANGE_1;++v)
-			// 	for(unsigned i=0;i<vector[v]->nextPos;i+=vector[v]->tupleSize)
-			// 		allCheckSums+=col[vector[v]->table[i+rowIdMap[relId]]];
-			// printCheckSum(allCheckSums,isLast);
-
+			// Add checkSum jobs to the queue
 			for(unsigned i=0;i<HASH_RANGE_1;++i){
 				struct checkSumArg *arg = js->checkSumJobs[i].argument;
 				arg->vector             = vector[i];
@@ -205,6 +237,7 @@ void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct Que
 				pthread_cond_signal(&condNonEmpty);
 				pthread_mutex_unlock(&queueMtx);
 			}
+			// Wait for all checkSum jobs to finish
 			pthread_mutex_lock(&jobsFinishedMtx);
 			while (jobsFinished!=HASH_RANGE_1) {
 				pthread_cond_wait(&condJobsFinished,&jobsFinishedMtx);
@@ -213,11 +246,10 @@ void applyCheckSums(struct InterMetaData *inter,struct Joiner* joiner,struct Que
 			pthread_cond_signal(&condJobsFinished);
 			pthread_mutex_unlock(&jobsFinishedMtx);
 
+			// Gather and sum the partial sums
 			uint64_t allCheckSums=0;
 			for(unsigned i=0;i<HASH_RANGE_1;++i)
-			{
 				allCheckSums+=js->checkSumArray[i];
-			}
 			printCheckSum(allCheckSums,isLast);
 		}
 	}

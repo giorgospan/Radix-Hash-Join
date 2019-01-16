@@ -11,23 +11,25 @@
 #include "Partition.h"
 #include "Build.h"
 #include "Probe.h"
+#include "Operations.h"
 #include "Queue.h"
 
-pthread_mutex_t queueMtx        = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t partitionMtx    = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t jobsFinishedMtx = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t condNonEmpty     = PTHREAD_COND_INITIALIZER;
-pthread_cond_t condJobsFinished = PTHREAD_COND_INITIALIZER;
-struct Queue* jobQueue          = NULL;
-struct JobScheduler* js         = NULL;
-unsigned jobsFinished           = 0;
-pthread_barrier_t barrier;
+#define THREAD_NUM 4
 
+pthread_mutex_t queueMtx           = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t jobsFinishedMtx    = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condNonEmpty        = PTHREAD_COND_INITIALIZER;
+pthread_cond_t condJobsFinished    = PTHREAD_COND_INITIALIZER;
+struct Queue* jobQueue             = NULL;
+struct JobScheduler* js            = NULL;
+pthread_mutex_t* partitionMtxArray = NULL;
+unsigned jobsFinished              = 0;
+pthread_barrier_t barrier;
 
 void createJobScheduler(struct JobScheduler** js){
 
   *js              = allocate(sizeof(struct JobScheduler),"createJobScheduler1");
-  (*js)->threadNum = 12;
+  (*js)->threadNum = THREAD_NUM;
   (*js)->tids      = allocate((*js)->threadNum*sizeof(pthread_t),"createJobScheduler2");
 
   // Create Queue with 1000 jobs max size
@@ -42,9 +44,14 @@ void createJobScheduler(struct JobScheduler** js){
     }
   }
 
-  for(unsigned i=0;i<(*js)->threadNum;++i){
-    // fprintf(stderr, "tids[%d]:%02x\n",i,(unsigned)((*js)->tids[i]));
-  }
+  // for(unsigned i=0;i<(*js)->threadNum;++i){
+  //   fprintf(stderr, "tids[%d]:%02x\n",i,(unsigned)((*js)->tids[i]));
+  // }
+
+  /* Initialize partition mutex array */
+  partitionMtxArray = malloc(HASH_RANGE_1*sizeof(pthread_mutex_t));
+  for(unsigned i=0;i<HASH_RANGE_1;++i)
+    pthread_mutex_init(partitionMtxArray+i,NULL);
 
   /* Initialize the barrier */
   pthread_barrier_init(&barrier, NULL, (*js)->threadNum+1);
@@ -97,6 +104,13 @@ void createJobArrays(struct JobScheduler* js){
   for(unsigned i=0;i<HASH_RANGE_1;++i){
     js->colEqualityJobs[i].argument = malloc(sizeof(struct colEqualityArg));
     js->colEqualityJobs[i].function = colEqualityFunc;
+  }
+
+  /* Create array with filter jobs */
+  js->filterJobs = malloc(HASH_RANGE_1*sizeof(struct Job));
+  for(unsigned i=0;i<HASH_RANGE_1;++i){
+    js->filterJobs[i].argument = malloc(sizeof(struct filterArg));
+    js->filterJobs[i].function = filterFunc;
   }
 
   /* Create array with checksum jobs */
@@ -173,15 +187,11 @@ void destroyJobScheduler(struct JobScheduler* js){
     fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
     exit(EXIT_FAILURE);
   }
-  if (err = pthread_mutex_destroy(&partitionMtx)) {
-    fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
-    exit(EXIT_FAILURE);
-  }
+
   if (err = pthread_mutex_destroy(&jobsFinishedMtx)) {
     fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
     exit(EXIT_FAILURE);
   }
-
 
   if(err = pthread_cond_destroy(&condNonEmpty)){
     fprintf(stderr, "pthread_cond_destroy: %s\n",strerror(err));
@@ -195,6 +205,15 @@ void destroyJobScheduler(struct JobScheduler* js){
 
   // Destroy barrier
   pthread_barrier_destroy(&barrier);
+
+  // Destroy partition mutex array
+  for(unsigned i=0;i<HASH_RANGE_1;++i)
+    if (err = pthread_mutex_destroy(partitionMtxArray+i)) {
+      fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
+      exit(EXIT_FAILURE);
+    }
+  free(partitionMtxArray);
+
 
   // Destroy arrays with jobs , checkSums and histograms
   free(js->checkSumArray);
@@ -222,6 +241,11 @@ void destroyJobScheduler(struct JobScheduler* js){
   for(unsigned i=0;i<HASH_RANGE_1;++i)
     free(js->colEqualityJobs[i].argument);
   free(js->colEqualityJobs);
+
+  for(unsigned i=0;i<HASH_RANGE_1;++i)
+    free(js->filterJobs[i].argument);
+  free(js->filterJobs);
+
 
   for(unsigned i=0;i<HASH_RANGE_1;++i)
     free(js->checkSumJobs[i].argument);
