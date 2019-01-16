@@ -140,7 +140,7 @@ void joinNonInterNonInter(struct InterMetaData *inter,RadixHashJoinInfo* left,Ra
 	// Update mapRels and interResults //
 	// Construct new mapping
 	unsigned *newMap = malloc(inter->queryRelations*sizeof(unsigned));
-	MALLOC_CHECK(*newMap);
+	MALLOC_CHECK(newMap);
 	for(unsigned i=0;i<inter->queryRelations;++i)
 		newMap[i] = -1;
 

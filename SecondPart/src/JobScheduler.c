@@ -14,7 +14,7 @@
 #include "Operations.h"
 #include "Queue.h"
 
-#define THREAD_NUM 6
+#define THREAD_NUM 1
 
 pthread_mutex_t queueMtx           = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t jobsFinishedMtx    = PTHREAD_MUTEX_INITIALIZER;
@@ -41,14 +41,9 @@ void createJobScheduler(struct JobScheduler** js){
   int err;
   for(unsigned i=0;i<(*js)->threadNum;++i){
     if(err = pthread_create((*js)->tids+i,NULL,threadFunc,(void*)0)){
-      // fprintf(stderr, "pthread_create: %s\n",strerror(err));
       exit(EXIT_FAILURE);
     }
   }
-
-  // for(unsigned i=0;i<(*js)->threadNum;++i){
-  //   fprintf(stderr, "tids[%d]:%02x\n",i,(unsigned)((*js)->tids[i]));
-  // }
 
   /* Initialize partition mutex array */
   partitionMtxArray = malloc(HASH_RANGE_1*sizeof(pthread_mutex_t));
@@ -195,7 +190,6 @@ void destroyJobScheduler(struct JobScheduler* js){
       fprintf(stderr, "pthread_join: %s\n",strerror(err));
       exit(EXIT_FAILURE);
     }
-    // fprintf(stderr, "tids[%d]:%02x\n",i,(unsigned)(js->tids[i]));
   }
 
   // Destroy thread id table

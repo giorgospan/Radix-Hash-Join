@@ -43,11 +43,11 @@ $(OBJECTS): ./%.o : $(SRCDIR)/%.c
 
 # create harness executable
 $(BUILDDIR)/harness: ./harness.o
-	g++ -O3 -o $@ $^
+	g++ -O3 -g -o $@ $^
 
 # create harness object file
 ./harness.o: $(SRCDIR)/harness.cpp
-	g++ -O3 -c $< -o $@
+	g++ -O3 -g -c $< -o $@
 
 #############################################################
 
