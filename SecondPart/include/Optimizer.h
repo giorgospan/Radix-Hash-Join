@@ -29,25 +29,15 @@ struct columnStats
 	char typeOfBitVector;
 };
 
-struct columnStats** allocateStatArray(unsigned size);
-void deAllocateStatArray(struct columnStats** array, unsigned size);
-
-
 void findStats(uint64_t *column, struct columnStats *stat, unsigned columnSize);
 void applyColEqualityEstimations(struct QueryInfo *q, struct Joiner *j);
-void filterEstimation(struct Joiner *j,unsigned colId,struct columnStats *stat,unsigned actualRelId,Comparison cmp,uint64_t constant);
+void filterEstimation(struct Joiner *j,struct QueryInfo *q,unsigned colId,struct columnStats *stat,unsigned actualRelId,unsigned relId,Comparison cmp,uint64_t constant);
 void applyFilterEstimations(struct QueryInfo *q, struct Joiner *j);
 void applyJoinEstimations(struct QueryInfo *q, struct Joiner *j);
-
-/* Power functions */
-uint64_t power(uint64_t base, uint64_t exponent);
-uint64_t linearPower(uint64_t base, uint64_t exponent);
-
 
 /* Printing functions */
 void columnPrint(uint64_t *column, unsigned columnSize);
 void printBooleanArray(char *array, unsigned size);
 void printColumnStats(struct columnStats *s);
-
 
 #endif

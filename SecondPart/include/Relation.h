@@ -9,7 +9,7 @@ struct Relation
 	unsigned numOfTuples;
 	unsigned numOfCols;
 	uint64_t **columns;
-	struct columnStats **colStats;
+	struct columnStats *stats;
 };
 
 

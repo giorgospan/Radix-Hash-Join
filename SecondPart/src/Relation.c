@@ -21,18 +21,18 @@ void createRelation(struct Relation **rel,char *fileName)
 	(*rel)->columns = NULL;
 	loadRelation(*rel,fileName);
 
+	// Allocate space for stats
+	(*rel)->stats = malloc((*rel)->numOfCols*sizeof(struct columnStats));
+	MALLOC_CHECK((*rel)->stats);
+
 	// Calculate stats for every column of the relation
-	(*rel)->colStats = allocateStatArray((*rel)->numOfCols);
 	for (unsigned i = 0; i < (*rel)->numOfCols; ++i)
 	{
-		findStats((*rel)->columns[i], (*rel)->colStats[i], (*rel)->numOfTuples);
+		findStats((*rel)->columns[i], &(*rel)->stats[i], (*rel)->numOfTuples);
 		// fprintf(stderr, "Relation[%s]\n",fileName);
-		// printColumnStats((*rel)->colStats[i]);
+		// printColumnStats(&(*rel)->stats[i]);
 	}
 	// fprintf(stderr, "\n\n\n");
-
-	// Allocate space for histograms (just the pointers)
-	// Space for the histogram arrays will be allocated in preCalculateHistograms(..)
 }
 
 void loadRelation(struct Relation *rel,char *fileName)
@@ -125,7 +125,9 @@ void destroyRelation(struct Relation *rel)
 	 * It is recommened to call munmap(...) but the process is going
 	 * to terminate anyway afterwards.
 	 */
-	deAllocateStatArray(rel->colStats, rel->numOfCols);
+	for(unsigned i=0;i<rel->numOfCols;++i)
+		free(rel->stats[i].bitVector);
+	free(rel->stats);
 	free(rel->columns);
 	free(rel);
 }

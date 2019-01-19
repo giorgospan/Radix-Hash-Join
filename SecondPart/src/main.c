@@ -36,11 +36,15 @@ int main(int argc, char const *argv[])
 			if(!strcmp(buffer,"F\n"))continue;
 
 			createQueryInfo(&q,buffer);
-			// createQueryEstimations(q,joiner);
-			// applyColEqualityEstimations(q,joiner);
-			// applyFilterEstimations(q,joiner);
-			// applyJoinEstimations(q,joiner);
-			// printTest(q);
+			createQueryEstimations(q,joiner);
+
+			// printColumnStats(&q->estimations[0][0]);
+
+			applyColEqualityEstimations(q,joiner);
+			applyFilterEstimations(q,joiner);
+			applyJoinEstimations(q,joiner);
+			// printColumnStats(&q->estimations[0][0]);
+			// fprintf(stderr, "\n\n");
 			// findOptimalJoinOrder(q,joiner);
 			join(joiner,q);
 			destroyQueryInfo(q);

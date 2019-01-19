@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>/*write()*/
 #include <string.h>/*strlen()*/
 #include <pthread.h>
 
@@ -12,7 +11,13 @@ unsigned initSize;
 
 void createVector(struct Vector **vector,unsigned tupleSize)
 {
-	*vector              = malloc(sizeof(struct Vector));
+	// *vector              = malloc(sizeof(struct Vector));
+	int err;
+	if( err = posix_memalign((void **)vector,128,sizeof(struct Vector)))
+	{
+			perror("posix_memalign failed.Exiting...");
+			exit(EXIT_FAILURE);
+	}
 	MALLOC_CHECK(*vector);
 	(*vector)->table     = NULL;
 	(*vector)->tupleSize = tupleSize;

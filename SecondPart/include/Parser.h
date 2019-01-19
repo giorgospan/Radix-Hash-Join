@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 #include "Utils.h"
+#include "Joiner.h"
+
+struct Joiner;
 
 struct SelectInfo
 {
@@ -33,6 +36,8 @@ struct QueryInfo
 	unsigned numOfPredicates;
 	unsigned numOfFilters;
 	unsigned numOfSelections;
+	// One estimation array per relation
+	struct columnStats **estimations;
 };
 
 /**
@@ -69,18 +74,19 @@ void parseQuery(struct QueryInfo *qInfo,char *rawQuery);
 /**
  * @brief      Determines if predicate is filter
  *
- * @param      predicate  The predicate 
+ * @param      predicate  The predicate
  *
  * @return     True if filter, False otherwise.
  */
 int isFilter(char *predicate);
 
+void createQueryEstimations(struct QueryInfo *qInfo,struct Joiner * joiner);
 int isColEquality(struct PredicateInfo *pInfo);
 void addFilter(struct FilterInfo *fInfo,char *token);
 void addPredicate(struct PredicateInfo *pInfo,char *token);
 
-/* 
- * "Getter" functions. 
+/*
+ * "Getter" functions.
  * Despite having access to each struct's members from anywhere in our program,
  * we use "getter" functions just to make our code more neat & clean.
  */

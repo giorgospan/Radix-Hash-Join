@@ -15,4 +15,8 @@ typedef enum Comparison { Less='<', Greater='>', Equal='=' } Comparison;
 
 int compare(uint64_t key,Comparison cmp,uint64_t constant);
 
+/* Power functions */
+uint64_t power(uint64_t base, uint64_t exponent);
+uint64_t linearPower(uint64_t base, uint64_t exponent);
+
 #endif
