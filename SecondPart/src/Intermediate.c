@@ -294,7 +294,8 @@ void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct Select
 	arg->queryRelations = inter->queryRelations;
 	arg->ptrToVec       = inter->interResults[getVectorPos(inter,arg->relId)]+0;
 	arg->ptrToMap       = &inter->mapRels[getVectorPos(inter,arg->relId)];
-	arg->pos = getVectorPos(inter,arg->relId);
+	arg->pos            = getVectorPos(inter,arg->relId);
+
 	if(isInInter(arg->vector[0]))
 	{
 		arg->isInInter   = 1;

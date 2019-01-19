@@ -11,6 +11,7 @@
 
 #include "Relation.h"
 #include "Utils.h"
+#include "Optimizer.h"
 
 
 void createRelation(struct Relation **rel,char *fileName)
@@ -19,6 +20,19 @@ void createRelation(struct Relation **rel,char *fileName)
 	MALLOC_CHECK(*rel);
 	(*rel)->columns = NULL;
 	loadRelation(*rel,fileName);
+
+	// Calculate stats for every column of the relation
+	(*rel)->colStats = allocateStatArray((*rel)->numOfCols);
+	for (unsigned i = 0; i < (*rel)->numOfCols; ++i)
+	{
+		findStats((*rel)->columns[i], (*rel)->colStats[i], (*rel)->numOfTuples);
+		// fprintf(stderr, "Relation[%s]\n",fileName);
+		// printColumnStats((*rel)->colStats[i]);
+	}
+	// fprintf(stderr, "\n\n\n");
+
+	// Allocate space for histograms (just the pointers)
+	// Space for the histogram arrays will be allocated in preCalculateHistograms(..)
 }
 
 void loadRelation(struct Relation *rel,char *fileName)
@@ -111,6 +125,7 @@ void destroyRelation(struct Relation *rel)
 	 * It is recommened to call munmap(...) but the process is going
 	 * to terminate anyway afterwards.
 	 */
+	deAllocateStatArray(rel->colStats, rel->numOfCols);
 	free(rel->columns);
 	free(rel);
 }

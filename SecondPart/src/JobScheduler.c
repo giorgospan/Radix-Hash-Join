@@ -14,7 +14,7 @@
 #include "Operations.h"
 #include "Queue.h"
 
-#define THREAD_NUM 1
+#define THREAD_NUM 8
 
 pthread_mutex_t queueMtx           = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t jobsFinishedMtx    = PTHREAD_MUTEX_INITIALIZER;
@@ -55,7 +55,6 @@ void createJobScheduler(struct JobScheduler** js){
   pthread_barrier_init(&barrier, NULL, (*js)->threadNum+1);
   /* Create job arrays */
   createJobArrays(*js);
-
 }
 
 void createJobArrays(struct JobScheduler* js){
@@ -219,17 +218,16 @@ void destroyJobScheduler(struct JobScheduler* js){
     exit(EXIT_FAILURE);
   }
 
-  // Destroy barrier
-  pthread_barrier_destroy(&barrier);
-
   // Destroy partition mutex array
   for(unsigned i=0;i<HASH_RANGE_1;++i)
-    if (err = pthread_mutex_destroy(partitionMtxArray+i)) {
-      fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
-      exit(EXIT_FAILURE);
-    }
+  if (err = pthread_mutex_destroy(partitionMtxArray+i)) {
+    fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
+    exit(EXIT_FAILURE);
+  }
   free(partitionMtxArray);
 
+  // Destroy barrier
+  pthread_barrier_destroy(&barrier);
 
   // Destroy arrays with jobs , checkSums and histograms
   free(js->checkSumArray);

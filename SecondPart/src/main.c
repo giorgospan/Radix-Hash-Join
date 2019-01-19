@@ -6,10 +6,8 @@
 #include <pthread.h>
 #include "Joiner.h"
 #include "Parser.h"
-#include "Partition.h"/*Setting RADIX_BITS*/
 #include "JobScheduler.h"
-#include "Queue.h"
-#include "Utils.h"
+#include "Optimizer.h"
 
 
 int main(int argc, char const *argv[])
@@ -27,6 +25,8 @@ int main(int argc, char const *argv[])
 
     // Read query line
     // Parse query by splitting it into parts
+		// Find estimations using the statistics of each column
+		// Find the optimal join order
     // Execute query and write checksum to stdout
     // Destroy query
 		struct QueryInfo *q;
@@ -36,6 +36,12 @@ int main(int argc, char const *argv[])
 			if(!strcmp(buffer,"F\n"))continue;
 
 			createQueryInfo(&q,buffer);
+			// createQueryEstimations(q,joiner);
+			// applyColEqualityEstimations(q,joiner);
+			// applyFilterEstimations(q,joiner);
+			// applyJoinEstimations(q,joiner);
+			// printTest(q);
+			// findOptimalJoinOrder(q,joiner);
 			join(joiner,q);
 			destroyQueryInfo(q);
 		}

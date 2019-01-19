@@ -16,9 +16,15 @@
 
 void colEquality(uint64_t *leftCol,uint64_t *rightCol,unsigned numOfTuples,struct Vector **vector)
 {
-	/* Create the vector that will hold the results */
-	/* 1 stands for: "1 rowId per tuple" -- we do not join relations in this function */
-	createVector(vector,1);
+
+	/* Create the vectors that will hold the results */
+	/* 1 stands for: "1 rowId per tuple"  */
+	for(unsigned i=0;i<HASH_RANGE_1;++i)
+		createVector(vector+i,1);
+
+	/* We could have splitted the whole job into HASH_RANGE_1 partial jobs */
+	/* Nahh,it did not give us any speedup. Thus, just let the master thread to do it
+	and save the result in 0-th vector. Rest vectors will be empty */
 
 	for(unsigned i=0;i<numOfTuples;++i)
 		if(leftCol[i]==rightCol[i])

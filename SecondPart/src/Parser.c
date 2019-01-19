@@ -4,6 +4,24 @@
 
 #include "Parser.h"
 #include "Utils.h"
+#include "Relation.h"
+
+
+// void createQueryEstimations(struct QueryInfo *qInfo,struct Joiner *j)
+// {
+// 	qInfo->estimations = malloc(qInfo->numOfRelationIds*sizeof(struct columnStats*));
+// 	MALLOC_CHECK(qInfo->estimations);
+// 	for(unsigned i=0;i<qInfo->numOfRelationIds;++i)
+// 	{
+// 		unsigned size = j->relations[i]->numOfCols*sizeof(struct columnStats);
+//
+// 		// Allocate space to store the stats of every column of current relation
+// 		qInfo->estimations[i] = malloc(size);
+// 		MALLOC_CHECK(qInfo->estimations[i]);
+// 		// Fetch the stats, calculated when the relations were being loaded in memory
+// 		memcpy(qInfo->estimations[i],j->relations[i]->colStats,size);
+// 	}
+// }
 
 void createQueryInfo(struct QueryInfo **qInfo,char *rawQuery)
 {

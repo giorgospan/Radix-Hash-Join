@@ -4,10 +4,12 @@
 #include <stdint.h>
 #include "Parser.h"
 
+
 #define  HASH_FUN_1(KEY) ((KEY) & ((1<<RADIX_BITS)-1))
 extern unsigned RADIX_BITS;
 extern unsigned HASH_RANGE_1;
 
+struct QueryInfo;
 
 struct Joiner
 {
@@ -42,8 +44,6 @@ void join(struct Joiner *joiner,struct QueryInfo *q);
 
 unsigned getRelationTuples(struct Joiner *joiner,unsigned relId);
 
-void setRadixBits(struct Joiner* joiner);
-void setVectorInitSize(struct Joiner *joiner);
 
 uint64_t *getColumn(struct Joiner *joiner,unsigned relId,unsigned colId);
 
@@ -52,5 +52,17 @@ uint64_t *getColumn(struct Joiner *joiner,unsigned relId,unsigned colId);
 *             Free-s joiner
 */
 void destroyJoiner(struct Joiner *joiner);
+
+/**
+* Sets the variable RADIX_BITS to an appropriate number according
+* to avg. number of tuples
+*/
+void setRadixBits(struct Joiner* joiner);
+
+/**
+* Sets the variable initSize to an appropriate number according
+* to avg. number of tuples
+*/
+void setVectorInitSize(struct Joiner *joiner);
 
 #endif

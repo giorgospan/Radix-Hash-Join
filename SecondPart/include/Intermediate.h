@@ -59,6 +59,7 @@ typedef struct Index
  */
 typedef struct RadixHashJoinInfo
 {
+
 	unsigned pos;
 	// Id of the relation [relevant to the parse order]
 	unsigned relId;

@@ -298,9 +298,9 @@ int main(int argc, char *argv[]) {
     // Output the elapsed time in milliseconds
     double elapsed_sec = (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000000.0;
     // cout << (long)(elapsed_sec * 1000) << endl;
-    cout << "=========================" << endl;
-    cout << "Elapsed time: " << elapsed_sec << " sec" << endl;
-    cout << "=========================" << endl;
+    cout << "======================" << endl;
+    cout << "Elapsed time: " << (long)(elapsed_sec * 1000) << " ms" << endl;
+    cout << "======================" << endl;
     return EXIT_SUCCESS;
   }
   return EXIT_FAILURE;
