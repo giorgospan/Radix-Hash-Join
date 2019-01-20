@@ -44,7 +44,7 @@ void testFilterFunc(void)
   struct Vector *vector;
   struct filterArg arg;
 
-  createJobScheduler(&js);
+  // createJobScheduler(&js);
   uint64_t col[] = {1u,2u,3u,4u,5u,6u,7u,8u,9u,10u};
   arg.col        = col;
   arg.start      = 0;
@@ -57,10 +57,6 @@ void testFilterFunc(void)
 	CU_ASSERT_EQUAL(4,getVectorTuples(vector));
 
   destroyVector(&vector);
-  fprintf(stderr, "%s\n","testFilterFunc");
-  usleep(300);
-  destroyJobScheduler(js);
-  fprintf(stderr, "%s\n","testFilterFunc");
 }
 
 void testFitlerInter(void)
@@ -71,7 +67,7 @@ void testFitlerInter(void)
   struct Vector *vector;
   struct filterArg arg;
 
-  createJobScheduler(&js);
+  // createJobScheduler(&js);
   uint64_t col[] = {1u,2u,3u,4u,5u,6u,7u,8u,9u,10u};
   arg.col        = col;
   arg.start      = 0;
@@ -89,8 +85,4 @@ void testFitlerInter(void)
 	CU_ASSERT_EQUAL(2,getVectorTuples(vector));
 
 	destroyVector(&vector);
-  fprintf(stderr, "%s\n","testFitlerInter");
-  usleep(300);
-  destroyJobScheduler(js);
-  fprintf(stderr, "%s\n","testFitlerInter");
 }

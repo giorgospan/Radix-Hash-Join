@@ -1,7 +1,9 @@
 #ifndef JOB_SCHEDULER_H
 #define JOB_SCHEDULER_H
 
+#include <stdint.h>
 #include <pthread.h>
+
 
 /* Mutexes - conditional variables - barriers */
 extern pthread_mutex_t queueMtx;

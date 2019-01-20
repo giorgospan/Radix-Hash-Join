@@ -14,7 +14,7 @@
 #include "Operations.h"
 #include "Queue.h"
 
-#define THREAD_NUM 28
+#define THREAD_NUM 4
 
 pthread_mutex_t queueMtx           = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t jobsFinishedMtx    = PTHREAD_MUTEX_INITIALIZER;
@@ -156,7 +156,7 @@ void *threadFunc(void * arg){
     pthread_cond_signal(&condNonEmpty);
     pthread_mutex_unlock(&queueMtx);
 
-    // Special job indicating the end of our program
+    // Special kind of job indicating the end of our program
     if(job==NULL)
     {
       // fprintf(stderr, "thread[%u] exiting...\n",(unsigned)pthread_self());
@@ -199,12 +199,12 @@ void destroyJobScheduler(struct JobScheduler* js){
 
   // Destroy mutexes and cond vars
   if (err = pthread_mutex_destroy(&queueMtx)) {
-    fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
+    fprintf(stderr, "pthread_mutex_destroy[queueMtx]: %s\n",strerror(err));
     exit(EXIT_FAILURE);
   }
 
   if (err = pthread_mutex_destroy(&jobsFinishedMtx)) {
-    fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
+    fprintf(stderr, "pthread_mutex_destroy[jobsFinishedMtx]: %s\n",strerror(err));
     exit(EXIT_FAILURE);
   }
 
@@ -221,7 +221,7 @@ void destroyJobScheduler(struct JobScheduler* js){
   // Destroy partition mutex array
   for(unsigned i=0;i<HASH_RANGE_1;++i)
   if (err = pthread_mutex_destroy(partitionMtxArray+i)) {
-    fprintf(stderr, "pthread_mutex_destroy: %s\n",strerror(err));
+    fprintf(stderr, "pthread_mutex_destroy[partitionMtxArray]: %s\n",strerror(err));
     exit(EXIT_FAILURE);
   }
   free(partitionMtxArray);
