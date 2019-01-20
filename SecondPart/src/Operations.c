@@ -69,16 +69,6 @@ void colEqualityInter(uint64_t *leftCol,uint64_t *rightCol,unsigned posLeft,unsi
 	free(results);
 }
 
-void filter(uint64_t *col,Comparison cmp,uint64_t constant,unsigned numOfTuples,struct Vector **vector)
-{
-	/* Create the vector that will hold the results */
-	/* 1 stands for: "1 rowId per tuple" -- we do not join relations in this function */
-	createVector(vector,1);
-	for(unsigned i=0;i<numOfTuples;++i)
-		if(compare(col[i],cmp,constant))
-			insertAtVector(*vector,&i);
-}
-
 void filterFunc(void *arg){
 	struct filterArg *myarg = arg;
 	createVector(myarg->vector,1);

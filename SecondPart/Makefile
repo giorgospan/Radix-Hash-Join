@@ -55,7 +55,7 @@ $(BUILDDIR)/harness: ./harness.o
 # that is because we want to use the main function that we
 # have in TESTDIR
 unittest: $(TESTOBJS) $(filter-out ./main.o, ./$(OBJECTS))
-	$(CC) $(CFLAGS) -o $@ $^ -lcunit
+	$(CC) $(CFLAGS) -o $@ $^ -lcunit -lpthread
 
 $(TESTOBJS): ./%.o : $(TESTDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

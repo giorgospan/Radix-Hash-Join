@@ -10,14 +10,14 @@
 #include "Joiner.h"
 
 void testCreateRelation(void)
-{	
+{
 	char sameFile[] = "r0";
 	struct Relation *R1,*R2;
 
 	// NOTE: Remember to change the file path in Relation.h !!!
 	createRelation(&R1,sameFile);
 	createRelation(&R2,sameFile);
-	
+
 	CU_ASSERT_EQUAL(R1->numOfTuples,R2->numOfTuples);
 	CU_ASSERT_EQUAL(R1->numOfCols,R2->numOfCols);
 
@@ -36,8 +36,9 @@ void testAddRelation(void)
 	createJoiner(&J);
 	const int NUM_OF_RELS = 13;
 	J->numOfRelations     = NUM_OF_RELS;
-	J->relations          = malloc(J->numOfRelations*sizeof(struct Relation*),"testAddRelation");
-	
+	J->relations          = malloc(J->numOfRelations*sizeof(struct Relation*));
+	MALLOC_CHECK(J->relations);
+
 	for(unsigned i=0;i<NUM_OF_RELS;++i)
 	{
 		char name[10];

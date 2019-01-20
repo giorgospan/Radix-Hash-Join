@@ -8,4 +8,5 @@ WORKLOAD_DIR=$(echo $WORKLOAD_DIR | sed 's:/*$::')
 cd $WORKLOAD_DIR
 
 WORKLOAD=$(basename "$PWD")
+# valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all $DIR/unittest
 $DIR/unittest

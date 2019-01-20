@@ -17,8 +17,8 @@
 
 void histFunc(void* arg)
 {
-  double elapsed;
-  struct timespec start, finish;
+  // double elapsed;
+  // struct timespec start, finish;
   // clock_gettime(CLOCK_MONOTONIC, &start);
 
 	struct histArg *myarg = arg;
@@ -117,7 +117,6 @@ void partition(RadixHashJoinInfo *info)
 	info->hist = malloc(HASH_RANGE_1*sizeof(unsigned));
   MALLOC_CHECK(info->hist);
 
-
 #if PARALLEL_HISTOGRAM
 	// Enqueue histogram jobs
 	unsigned chunkSize = info->numOfTuples / js->threadNum;
@@ -146,7 +145,10 @@ void partition(RadixHashJoinInfo *info)
 	pthread_mutex_unlock(&queueMtx);
 
 	// Wait until all threads are done
+  // fprintf(stderr, "%s\n","Before barrier" );
 	pthread_barrier_wait(&barrier);
+  // fprintf(stderr, "%s\n","After barrier" );
+
 
 	// Merge the partial histograms
 	for(unsigned i=0;i<HASH_RANGE_1;++i)
@@ -158,13 +160,13 @@ void partition(RadixHashJoinInfo *info)
 #else
 
   for(unsigned i=0;i<HASH_RANGE_1;++i)
-  info->hist[i] = 0;
+    info->hist[i] = 0;
 
   for(unsigned i=0;i<info->numOfTuples;++i)
-  if(info->isInInter)
-  	info->hist[HASH_FUN_1(info->unsorted->values[i])] += 1;
-  else
-  	info->hist[HASH_FUN_1(info->col[i])] += 1;
+    if(info->isInInter)
+    	info->hist[HASH_FUN_1(info->unsorted->values[i])] += 1;
+    else
+    	info->hist[HASH_FUN_1(info->col[i])] += 1;
 #endif
 
   // Calculate Prefix Sum
@@ -213,7 +215,9 @@ void partition(RadixHashJoinInfo *info)
 	pthread_mutex_unlock(&queueMtx);
 
 	// Wait until all threads are done
+  // fprintf(stderr, "%s\n","Before barrier" );
 	pthread_barrier_wait(&barrier);
+  // fprintf(stderr, "%s\n","After barrier" );
 #else
 
   for(unsigned i=0;i<info->numOfTuples;++i)

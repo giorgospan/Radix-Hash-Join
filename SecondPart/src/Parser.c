@@ -29,6 +29,7 @@ void createQueryInfo(struct QueryInfo **qInfo,char *rawQuery)
 {
 	*qInfo = malloc(sizeof(struct QueryInfo));
 	MALLOC_CHECK(*qInfo);
+	(*qInfo)->estimations = NULL;
 	parseQuery(*qInfo,rawQuery);
 }
 
@@ -38,8 +39,9 @@ void destroyQueryInfo(struct QueryInfo *qInfo)
 	free(qInfo->predicates);
 	free(qInfo->filters);
 	free(qInfo->selections);
-	for(unsigned i=0;i<qInfo->numOfRelationIds;++i)
-		free(qInfo->estimations[i]);
+	if(qInfo->estimations)/* Useful in unit testing */
+		for(unsigned i=0;i<qInfo->numOfRelationIds;++i)
+			free(qInfo->estimations[i]);
 	free(qInfo->estimations);
 	free(qInfo);
 }

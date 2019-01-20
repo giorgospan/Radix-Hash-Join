@@ -15,9 +15,9 @@ int main(int argc, char const *argv[])
 	if (CUE_SUCCESS != CU_initialize_registry())
       return CU_get_error();
 
-  	 /* Create 4 Suites */
-	CU_pSuite suites[4];
-	for(unsigned i=0;i<4;++i){
+  	 /* Create 5 Suites */
+	CU_pSuite suites[6];
+	for(unsigned i=0;i<6;++i){
 
 		char suitName[100];
 		sprintf(suitName,"Suite%u",i);
@@ -26,7 +26,7 @@ int main(int argc, char const *argv[])
 			CU_cleanup_registry();
 			return CU_get_error();
 		}
-  	}
+  }
 
   	/* Add tests to each suite */
 	if ((NULL == CU_add_test(suites[0],"Test of Realtion.c::createRelation()",testCreateRelation))||
@@ -44,17 +44,30 @@ int main(int argc, char const *argv[])
 		return CU_get_error();
 	}
 
-	if ((NULL == CU_add_test(suites[2],"Test of Operations.c::colEquality()",testColEquality))||
-		(NULL == CU_add_test(suites[2],"Test of Operations.c::colEqualityInter()",testColEqualityInter))||
-		(NULL == CU_add_test(suites[2],"Test of Operations.c::filter()",testFilter))||
-		(NULL == CU_add_test(suites[2],"Test of Operations.c::fitlerInter()",testFitlerInter)))
+	if ((NULL == CU_add_test(suites[2],"Test of Queue.c::createQueue()",testCreateQueue))||
+		(NULL == CU_add_test(suites[2],"Test of Queue.c::enQueue()",testEnqueue))||
+		(NULL == CU_add_test(suites[2],"Test of Queue.c::deQueue()",testDeQueue)))
 	{
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
-	if ((NULL == CU_add_test(suites[3],"Test of Partition.c::partition()",testPartition))||
-		(NULL == CU_add_test(suites[3],"Test of Partition.c::sortColumn()",testSortColumn))||
-		(NULL == CU_add_test(suites[3],"Test of build()|probe()",testBuildProbe)))
+
+	if (NULL == CU_add_test(suites[3],"Test of Optimizer.c::findStats()",testFindStats))
+	{
+		CU_cleanup_registry();
+		return CU_get_error();
+	}
+
+	if ((NULL == CU_add_test(suites[4],"Test of Operations.c::colEquality()",testColEquality))||
+		(NULL == CU_add_test(suites[4],"Test of Operations.c::filterFunc()",testFilterFunc))||
+		(NULL == CU_add_test(suites[4],"Test of Operations.c::fitlerInter()",testFitlerInter)))
+	{
+		CU_cleanup_registry();
+		return CU_get_error();
+	}
+	if ((NULL == CU_add_test(suites[5],"Test of Partition.c::partition()",testPartition))||
+		(NULL == CU_add_test(suites[5],"Test of Partition.c::partitionFunc()",testPartitionFunc))||
+		(NULL == CU_add_test(suites[5],"Test of build()|probe()",testBuildProbe)))
 	{
 		CU_cleanup_registry();
 		return CU_get_error();
@@ -62,15 +75,15 @@ int main(int argc, char const *argv[])
 
 	/**
 	 * Maximum output of run details.
-	 * 
-	 * The basic interface is also non-interactive, 
+	 *
+	 * The basic interface is also non-interactive,
 	 * with results output to stdout.
 	 */
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 	CU_basic_run_tests();
 	/**
 	 * Cleanup CU_TestRegistry.
-	 * Return any possible error.  
+	 * Return any possible error.
 	 */
 	CU_cleanup_registry();
 	return CU_get_error();

@@ -14,7 +14,7 @@
 #include "Operations.h"
 #include "Queue.h"
 
-#define THREAD_NUM 4
+#define THREAD_NUM 28
 
 pthread_mutex_t queueMtx           = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t jobsFinishedMtx    = PTHREAD_MUTEX_INITIALIZER;

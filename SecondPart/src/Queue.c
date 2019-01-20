@@ -17,9 +17,6 @@ void createQueue(struct Queue **q, int size)
 	(*q)->front = -1;
 	(*q)->rear = -1;
 
-	/* Valgrind warns of unintialized values should be removed */
-	// for (int i = 0; i < size; i++)
-	// 	(*q)->array[i] = 0;
 }
 
 void destroyQueue(struct Queue *q)

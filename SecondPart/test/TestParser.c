@@ -18,10 +18,11 @@ void testCreateQueryInfo(void)
 	char rawQuery[] = "12 1 6 12|3.0=3.2&0.2=1.0&1.2>9999&1.1=4444&1.0=2.1&0.1=3.2&3.0<33199|2.1 0.1 0.2";
 	struct QueryInfo *q;
 	createQueryInfo(&q,rawQuery);
+	
 	CU_ASSERT_EQUAL(4,getNumOfRelations(q));
 	CU_ASSERT_EQUAL(3,getNumOfFilters(q));
 	CU_ASSERT_EQUAL(1,getNumOfColEqualities(q));
-	destroyQueryInfo(q);	
+	destroyQueryInfo(q);
 }
 
 /**
