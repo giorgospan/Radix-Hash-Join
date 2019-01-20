@@ -1,8 +1,5 @@
 #include <stdio.h>
 #include <string.h> /*strcmp()*/
-#include <stdlib.h> /*exit()*/
-#include <time.h>/*Debugging*/
-#include <unistd.h> /*sleep()--debugging*/
 #include <pthread.h>
 #include "Joiner.h"
 #include "Parser.h"
@@ -38,13 +35,9 @@ int main(int argc, char const *argv[])
 			createQueryInfo(&q,buffer);
 			createQueryEstimations(q,joiner);
 
-			// printColumnStats(&q->estimations[0][0]);
-
 			applyColEqualityEstimations(q,joiner);
 			applyFilterEstimations(q,joiner);
 			applyJoinEstimations(q,joiner);
-			// printColumnStats(&q->estimations[0][0]);
-			// fprintf(stderr, "\n\n");
 			// findOptimalJoinOrder(q,joiner);
 			join(joiner,q);
 			destroyQueryInfo(q);

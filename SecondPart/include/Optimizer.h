@@ -34,6 +34,8 @@ void applyColEqualityEstimations(struct QueryInfo *q, struct Joiner *j);
 void filterEstimation(struct Joiner *j,struct QueryInfo *q,unsigned colId,struct columnStats *stat,unsigned actualRelId,unsigned relId,Comparison cmp,uint64_t constant);
 void applyFilterEstimations(struct QueryInfo *q, struct Joiner *j);
 void applyJoinEstimations(struct QueryInfo *q, struct Joiner *j);
+void findOptimalJoinOrder(struct QueryInfo *q, struct Joiner *j);
+
 
 /* Printing functions */
 void columnPrint(uint64_t *column, unsigned columnSize);

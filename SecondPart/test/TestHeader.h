@@ -27,6 +27,7 @@ void testFitlerInter(void);
 /* Testing for RadixHashJoin functions */
 void testPartition(void);
 void testPartitionFunc(void);
-void testBuildProbe(void);
+void testBuildFunc(void);
+void testJoinFunc(void);
 
 #endif

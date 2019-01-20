@@ -1,6 +1,9 @@
 #include <stdio.h>
 
 #include "CUnit/Basic.h"
+#include "JobScheduler.h"
+#include "Vector.h"
+#include "Joiner.h"
 #include "TestHeader.h"
 
 int init_suite(void)
@@ -27,6 +30,15 @@ int main(int argc, char const *argv[])
 			return CU_get_error();
 		}
   }
+
+	/* Set global variables   */
+	RADIX_BITS   = 4;
+	HASH_RANGE_1 = 16;
+	// Vector's initial size
+	initSize     = 20;
+
+	/* Create job scheduler  */
+	createJobScheduler(&js);
 
   	/* Add tests to each suite */
 	if ((NULL == CU_add_test(suites[0],"Test of Realtion.c::createRelation()",testCreateRelation))||
@@ -67,7 +79,8 @@ int main(int argc, char const *argv[])
 	}
 	if ((NULL == CU_add_test(suites[5],"Test of Partition.c::partition()",testPartition))||
 		(NULL == CU_add_test(suites[5],"Test of Partition.c::partitionFunc()",testPartitionFunc))||
-		(NULL == CU_add_test(suites[5],"Test of build()|probe()",testBuildProbe)))
+		(NULL == CU_add_test(suites[5],"Test of Build.c::buildFunc()",testBuildFunc)) ||
+		(NULL == CU_add_test(suites[5],"Test of Probe.c::joinFunc()",testJoinFunc)))
 	{
 		CU_cleanup_registry();
 		return CU_get_error();
@@ -86,5 +99,6 @@ int main(int argc, char const *argv[])
 	 * Return any possible error.
 	 */
 	CU_cleanup_registry();
+	destroyJobScheduler(js);
 	return CU_get_error();
 }

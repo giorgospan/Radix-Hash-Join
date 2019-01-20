@@ -124,110 +124,6 @@ void applyColEqualityEstimations(struct QueryInfo *q, struct Joiner *j)
 	}
 }
 
-void filterEstimation(struct Joiner *j,struct QueryInfo *q,unsigned colId,struct columnStats *stat,unsigned actualRelId,unsigned relId,Comparison cmp,uint64_t constant)
-{
-	struct columnStats *temp;
-	uint64_t fTemp = stat->f;
-	char isInArray = 0;
-
-	if (cmp == '=')
-	{
-
-		/* Find if constant is in the discrete values */
-		/* If constant is not in the range of values of the column we won't find it in the bitVector */
-		if ( (constant < stat->minValue) ||  (constant > stat->maxValue) )
-			isInArray = 0;
-		/* If the value in the bitVector is 1 then the constant is in the bitVector */
-		else
-		{
-			/* Make sure we use the correct way to find if it is in the bitVector */
-			if (stat->typeOfBitVector == 0)
-			{
-				// fprintf(stderr, "%u\n",BITTEST(stat->bitVector,522 - stat->minValue));
-				if (BITTEST(stat->bitVector,constant - stat->minValue) != 0)
-				{
-					isInArray = 1;
-				}
-			}
-			else if (stat->typeOfBitVector == 1)
-			{
-				if(BITTEST(stat->bitVector,(constant - stat->minValue) % PRIMELIMIT) != 0)
-					isInArray = 1;
-			}
-		}
-
-		/* Change the statistics  of the column */
-		stat->minValue = constant;
-		stat->maxValue = constant;
-		if (isInArray == 0)
-		{
-			stat->f = 0;
-			stat->discreteValues = 0;
-		}
-		else
-		{
-			stat->f = stat->f / stat->discreteValues;
-			stat->discreteValues = 1;
-		}
-	}
-	else
-	{
-
-		/* cmp is '>' or '<' */
-		/* lowerLimit */
-		uint64_t k1 = (cmp == '>') ?  constant + 1 : stat->minValue ;
-		/* upperLimit */
-		uint64_t k2 = (cmp == '<') ?  constant - 1 : stat->maxValue;
-
-		if (k1 < stat->minValue)
-			k1 = stat->minValue;
-
-		if (k2 > stat->maxValue)
-			k2 = stat->maxValue;
-
-		/* If factor is in (0,1],round it up to 1 */
-		double factor = (double)(k2 - k1) / (stat->maxValue - stat->minValue);
-		if((factor <= 1)  && (factor > 0))
-			factor = 1;
-
-		// fprintf(stderr, "k1:%lu | k2:%lu\n\n",k1,k2);
-		// fprintf(stderr, "minPrev:%lu | maxPrev:%lu\n",stat->minValue,stat->maxValue);
-		// fprintf(stderr, "Factor:%.3lf\n",factor);
-
-		/* Change the statistics  of the column */
-		if(stat->maxValue - stat->minValue > 0)
-		{
-			stat->discreteValues = factor * stat->discreteValues;
-			stat->f              = factor * stat->f;
-		}
-		else
-			/* In case of: R.A<CONSTANT & R.A>CONSTANT */
-			stat->discreteValues = stat->f  = 0 ;
-
-		stat->minValue = k1;
-		stat->maxValue = k2;
-	}
-
-	/* Update the statistics of every other column
-	The formulas are the same for every filter */
-	for (unsigned c = 0; c < (*(j->relations[actualRelId])).numOfCols; ++c)
-	{
-		temp = &q->estimations[relId][c];
-		/* Make sure we update every other column , except the one that we just applied the filter estimations  */
-		if (c != colId)
-		{
-			/* In case fTemp or temp->discreteValues is zero */
-			fTemp = (fTemp == 0) ? 1 : fTemp;
-			temp->discreteValues = (temp->discreteValues == 0) ? 1 : temp->discreteValues;
-
-			temp->discreteValues = temp->discreteValues * (1 -
-				power(1 - (1 - stat->f / fTemp),
-				temp->f / temp->discreteValues));
-				temp->f = stat->f;
-			}
-		}
-}
-
 void applyFilterEstimations(struct QueryInfo *q, struct Joiner *j)
 {
 
@@ -332,6 +228,139 @@ void applyJoinEstimations(struct QueryInfo *q, struct Joiner *j)
 	}
 	// fprintf(stderr, "\n");
 }
+
+void filterEstimation(struct Joiner *j,struct QueryInfo *q,unsigned colId,struct columnStats *stat,unsigned actualRelId,unsigned relId,Comparison cmp,uint64_t constant)
+{
+	struct columnStats *temp;
+	uint64_t fTemp = stat->f;
+	char isInArray = 0;
+
+	if (cmp == '=')
+	{
+
+		/* Find if constant is in the discrete values */
+		/* If constant is not in the range of values of the column we won't find it in the bitVector */
+		if ( (constant < stat->minValue) ||  (constant > stat->maxValue) )
+		isInArray = 0;
+		/* If the value in the bitVector is 1 then the constant is in the bitVector */
+		else
+		{
+			/* Make sure we use the correct way to find if it is in the bitVector */
+			if (stat->typeOfBitVector == 0)
+			{
+				// fprintf(stderr, "%u\n",BITTEST(stat->bitVector,522 - stat->minValue));
+				if (BITTEST(stat->bitVector,constant - stat->minValue) != 0)
+				{
+					isInArray = 1;
+				}
+			}
+			else if (stat->typeOfBitVector == 1)
+			{
+				if(BITTEST(stat->bitVector,(constant - stat->minValue) % PRIMELIMIT) != 0)
+				isInArray = 1;
+			}
+		}
+
+		/* Change the statistics  of the column */
+		stat->minValue = constant;
+		stat->maxValue = constant;
+		if (isInArray == 0)
+		{
+			stat->f = 0;
+			stat->discreteValues = 0;
+		}
+		else
+		{
+			stat->f = stat->f / stat->discreteValues;
+			stat->discreteValues = 1;
+		}
+	}
+	else
+	{
+
+		/* cmp is '>' or '<' */
+		/* lowerLimit */
+		uint64_t k1 = (cmp == '>') ?  constant + 1 : stat->minValue ;
+		/* upperLimit */
+		uint64_t k2 = (cmp == '<') ?  constant - 1 : stat->maxValue;
+
+		if (k1 < stat->minValue)
+		k1 = stat->minValue;
+
+		if (k2 > stat->maxValue)
+		k2 = stat->maxValue;
+
+		/* If factor is in (0,1],round it up to 1 */
+			double factor = (double)(k2 - k1) / (stat->maxValue - stat->minValue);
+			if((factor <= 1)  && (factor > 0))
+			factor = 1;
+
+			// fprintf(stderr, "k1:%lu | k2:%lu\n\n",k1,k2);
+			// fprintf(stderr, "minPrev:%lu | maxPrev:%lu\n",stat->minValue,stat->maxValue);
+			// fprintf(stderr, "Factor:%.3lf\n",factor);
+
+			/* Change the statistics  of the column */
+			if(stat->maxValue - stat->minValue > 0)
+			{
+				stat->discreteValues = factor * stat->discreteValues;
+				stat->f              = factor * stat->f;
+			}
+			else
+			/* In case of: R.A<CONSTANT & R.A>CONSTANT */
+			stat->discreteValues = stat->f  = 0 ;
+
+			stat->minValue = k1;
+			stat->maxValue = k2;
+		}
+
+		/* Update the statistics of every other column
+		The formulas are the same for every filter */
+		for (unsigned c = 0; c < (*(j->relations[actualRelId])).numOfCols; ++c)
+		{
+			temp = &q->estimations[relId][c];
+			/* Make sure we update every other column , except the one that we just applied the filter estimations  */
+			if (c != colId)
+			{
+				/* In case fTemp or temp->discreteValues is zero */
+				fTemp = (fTemp == 0) ? 1 : fTemp;
+				temp->discreteValues = (temp->discreteValues == 0) ? 1 : temp->discreteValues;
+
+				temp->discreteValues = temp->discreteValues * (1 -
+					power(1 - (1 - stat->f / fTemp),
+					temp->f / temp->discreteValues));
+					temp->f = stat->f;
+				}
+			}
+		}
+
+
+void findOptimalJoinOrder(struct QueryInfo *q, struct Joiner *j)
+{
+	// Holds the number of each join predicate and its cost
+	// unsigned *costArray = malloc(2*q->numOfPredicates*sizeof(unsigned));
+	// MALLOC_CHECK(costArray);
+	// for(unsigned i=0;i<q->numOfPredicates;++i)
+	// {
+	// 	if(!isColEquality(&q->predicates[i]))
+	// 	{
+	// 		unsigned leftRelId            = getRelId(&q->predicates[i].left);
+	// 		unsigned rightRelId           = getRelId(&q->predicates[i].right);
+	// 		unsigned leftColId            = getColId(&q->predicates[i].left);
+	// 		unsigned rightColId           = getColId(&q->predicates[i].right);
+	// 		unsigned actualRelIdLeft      = getOriginalRelId(q, &q->predicates[i].left);
+	// 		unsigned actualRelIdRight     = getOriginalRelId(q, &q->predicates[i].right);
+	// 		struct columnStats *statLeft  = &q->estimations[leftRelId][leftColId];
+	// 		struct columnStats *statRight = &q->estimations[rightRelId][rightColId];
+	// 		costArray[i]   = i;
+	// 		costArray[i+1] = statLeft->f*statRight->f;
+	// 		fprintf(stderr, "Cost[%u]:%u\n",i,costArray[i+1]);
+	// 	}
+	// }
+	// // Sort in ascending order
+	// quickSort(costArray,0,2*q->numOfPredicates-1);
+	// fprintf(stderr, "\n\n");
+}
+
 
 void printColumnStats(struct columnStats *s)
 {
