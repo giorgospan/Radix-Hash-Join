@@ -10,7 +10,7 @@
 
 int main(int argc, char const *argv[])
 {
-	
+
 	clock_t begin,end;
 	double duration;
 	uint32_t i;
@@ -39,18 +39,18 @@ int main(int argc, char const *argv[])
 	// struct PlaceHolder *final =  sortArray(demi, cols, pSum);
 	/////////////////////////////////////////////////////////////////////////
 
-	R->demi = convertToStructs(selectColumn(R->inputRelation, R->joinCol), R->cols);
+	R->demi      = convertToStructs(selectColumn(R->inputRelation, R->joinCol), R->cols);
 	R->histoGram = createHistogram(R->demi,R->cols);
-	R->pSum = createPsum(R->histoGram);
-	R->final = sortArray(R->demi,R->cols,R->pSum);
+	R->pSum      = createPsum(R->histoGram);
+	R->final     = sortArray(R->demi,R->cols,R->pSum);
 
-	S->demi = convertToStructs(selectColumn(S->inputRelation, S->joinCol), S->cols);
+	S->demi      = convertToStructs(selectColumn(S->inputRelation, S->joinCol), S->cols);
 	S->histoGram = createHistogram(S->demi,S->cols);
-	S->pSum = createPsum(S->histoGram);
-	S->final = sortArray(S->demi,S->cols,S->pSum);
+	S->pSum      = createPsum(S->histoGram);
+	S->final     = sortArray(S->demi,S->cols,S->pSum);
 
-	end = clock();
-	duration = (double)(end - begin) / CLOCKS_PER_SEC;
+	end          = clock();
+	duration     = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("Duration: %.3f\n\n\n",duration);
 
 	// PHASE TWO [Build]
@@ -68,19 +68,19 @@ int main(int argc, char const *argv[])
 
 	if(R->cols < S->cols)
 	{
-		big = S;
+		big   = S;
 		small = R;
 	}
 	else
 	{
-		big = R;
+		big   = R;
 		small = S;
 	}
 
 	initializeIndexArray(small);
 	buildIndexPerBucket(small);
 
-	end = clock();
+	end      = clock();
 	duration = (double)(end - begin) / CLOCKS_PER_SEC;
 	printf("Duration: %.3f\n\n\n",duration);
 

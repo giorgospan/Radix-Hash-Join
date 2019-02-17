@@ -150,9 +150,9 @@ void applyJoins(struct InterMetaData *inter,struct Joiner* joiner,struct QueryIn
 		if(!isColEquality(&q->predicates[i]))
 		{
 			RadixHashJoinInfo argLeft,argRight;
-			initalizeInfo(inter,q,&q->predicates[i].left,joiner,&argLeft);
+			initializeInfo(inter,q,&q->predicates[i].left,joiner,&argLeft);
 			// printf(" = ");
-			initalizeInfo(inter,q,&q->predicates[i].right,joiner,&argRight);
+			initializeInfo(inter,q,&q->predicates[i].right,joiner,&argRight);
 			// printf("\n");
 			applyProperJoin(inter,&argLeft,&argRight);
 			// printf("\n");
@@ -284,7 +284,8 @@ void printCheckSum(uint64_t checkSum,unsigned isLast)
 	}
 }
 
-void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg)
+
+void initializeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg)
 {
 	arg->relId          = getRelId(s);
 	arg->colId          = getColId(s);

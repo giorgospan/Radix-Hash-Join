@@ -9,21 +9,21 @@ static uint32_t bufferEntries;
 
 void ListCreate(struct List** list)
 {
-	
+
 	if( (*list = malloc(sizeof(struct List)))==NULL)
 	{
 		perror("ListCreate()");
 		exit(1);
 	}
-	
-	(*list) -> first = NULL;
-	(*list) -> last = NULL;
-	(*list) -> nodeCounter = 0;
+
+	(*list) -> first        = NULL;
+	(*list) -> last         = NULL;
+	(*list) -> nodeCounter  = 0;
 	(*list) -> tupleCounter = 0;
-	bufferEntries = BUFFER_SIZE / sizeof(struct resultTuple);
+	bufferEntries           = BUFFER_SIZE / sizeof(struct resultTuple);
 }
 
-/* This function might be called in the following cases: 
+/* This function might be called in the following cases:
  	1. List is empty, thus we need to create our first node.
  	2. List is not empty, but the buffer in the last node is full. */
 void ListCreateNode(struct ListNode** new,struct resultTuple* tuple)
@@ -51,7 +51,6 @@ void ListCreateNode(struct ListNode** new,struct resultTuple* tuple)
 	/* Next node is null */
 	(*new)->next = NULL;
 }
-
 
 void ListInsert(struct List* list,struct resultTuple* tuple)
 {
@@ -103,7 +102,7 @@ void ListPrint(struct List* list)
 {
 	struct ListNode* current = list->first;
 
-	// Replace fp with stdout in case you want to print output on command line 
+	// Replace fp with stdout in case you want to print output on command line
 
 	FILE* fp = fopen("results.log","w");
 
@@ -115,7 +114,7 @@ void ListPrint(struct List* list)
 	}
 
 	/* Print buffer of each node */
-	uint32_t i;	
+	uint32_t i;
 	while(current)
 	{
 		/* Buffer in the last node might not be full */
@@ -133,14 +132,13 @@ void ListPrint(struct List* list)
 	fclose(fp);
 }
 
-
 void ListDestroy(struct List* list)
 {
-	
+
 	struct ListNode* current;
 	struct ListNode* temp;
 	current = list->first;
-	
+
 	/*Loop until we've reached end of list*/
 	while(current)
 	{
@@ -153,7 +151,7 @@ void ListDestroy(struct List* list)
 		/* Free the node itself */
 		free(temp);
 	}
-	
+
 	/* Free the main list node */
 	free(list);
 }
@@ -161,7 +159,7 @@ void ListDestroy(struct List* list)
 uint32_t isFull(struct resultTuple* buffer)
 {
 	/* Next available place inside the buffer
-		is bufferEntries + 1 [i.e: outside the buffer] 
+		is bufferEntries + 1 [i.e: outside the buffer]
 		So, buffer is full. */
 	return available >= bufferEntries;
 }

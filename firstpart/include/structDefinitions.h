@@ -38,9 +38,9 @@ struct relation
 	uint32_t **pSum;
 	struct PlaceHolder *final;
 
-	/* One struct index per bucket 
-		A relation has many buckets 
-		Consequently we need an array of indexes */
+	/* One struct index per bucket.
+		A relation has many buckets,
+		consequently we need an array of indexes */
 	struct index **indexArray;
 };
 
@@ -49,15 +49,15 @@ struct index
 	/* These are the two arrays
 		used for the indexing of a single bucket */
 	uint32_t *chainArray;
-	uint32_t *bucketArray;	
+	uint32_t *bucketArray;
 };
 
 
-/* Just Print the damn thing 
+/* Just Print the damn thing
 	Pass by refrence for less overhead */
 void printStruct(struct PlaceHolder* structToPrint);
 
-/* Just Print the damn tuple 
+/* Just Print the damn tuple
 	Pass by refrence for less overhead */
 void printTuple(struct tuple* structToPrint);
 
@@ -67,7 +67,7 @@ void printArrayOfTuples(struct tuple* arrayToPrint, uint32_t size);
 /* Print the array of structs*/
 void printArrayOfStructs(struct PlaceHolder* arrayToPrint, uint32_t size);
 
-/* Just free the memory
+/* Just frees the memory
 	OBSELETE */
 // void deAllocateStructs(struct PlaceHolder* structToDelete);
 
@@ -75,8 +75,8 @@ void printArrayOfStructs(struct PlaceHolder* arrayToPrint, uint32_t size);
 	and initialize its fields */
 void initializeRelation(struct relation** R);
 
-/* Deallocate the space allocated 
-	for the fields of the relation 
+/* Deallocate the space allocated
+	for the fields of the relation
 	and of course the relation itself */
 void deleteRelation(struct relation* R);
 

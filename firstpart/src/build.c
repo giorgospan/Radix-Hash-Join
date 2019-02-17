@@ -35,7 +35,7 @@ void initializeIndexArray(struct relation* R)
 			R->indexArray[i] = malloc(sizeof(struct index));
 
 			// Allocate space for its index's fields
-			R->indexArray[i]->chainArray = malloc(bucketSize*sizeof(uint32_t));
+			R->indexArray[i]->chainArray  = malloc(bucketSize*sizeof(uint32_t));
 			R->indexArray[i]->bucketArray = malloc(rangeOfHash2*sizeof(uint32_t));
 
 			/* Initialize chainArray and bucketArray with 0's */
@@ -131,7 +131,6 @@ void traverseChain(uint32_t chainPos,uint32_t* chainArray,uint32_t posToBeStored
 		}
 	}
 }
-
 
 uint32_t secondHash(uint32_t num)
 {

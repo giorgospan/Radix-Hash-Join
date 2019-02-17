@@ -114,7 +114,7 @@ typedef struct RadixHashJoinInfo
 
 /* Creators/Initializers */
 void createInterMetaData(struct InterMetaData **inter,struct QueryInfo *q);
-void initalizeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg);
+void initializeInfo(struct InterMetaData *inter,struct QueryInfo *q,struct SelectInfo *s,struct Joiner *j,RadixHashJoinInfo *arg);
 
 /* Apply Functions */
 void applyColumnEqualities(struct InterMetaData *inter,struct Joiner* joiner,struct QueryInfo *q);

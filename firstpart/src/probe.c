@@ -51,7 +51,7 @@ void probe(struct relation* big,struct relation* small,struct List *list)
 		checkEqual(small,big->final[i].rowId,start,searchValue,k,list);
 
 		while(1)
-		{	
+		{
 			// We've reached the end of the chain
 			if(searchIndex->chainArray[k] == 0)
 				break;
@@ -63,9 +63,7 @@ void probe(struct relation* big,struct relation* small,struct List *list)
 				checkEqual(small,big->final[i].rowId,start,searchValue,k,list);
 			}
 		}
-
 	}
-
 }
 
 void checkEqual(struct relation* small,uint32_t i,uint32_t start,uint32_t searchValue,uint32_t pseudoRow,struct List* list)
@@ -83,6 +81,3 @@ void checkEqual(struct relation* small,uint32_t i,uint32_t start,uint32_t search
 		ListInsert(list,&tuple);
 	}
 }
-
-
-
