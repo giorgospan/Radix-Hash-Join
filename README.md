@@ -25,20 +25,24 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 
   * **Probe**
 
-    Partitions of the non-indexed, i.e: big, relation are scanned and the respective index is probed for matching tuples.
+    Partitions of the non-indexed relation, i.e: the bigger one, are scanned and the respective index is probed for matching tuples.
 
-    ![image not found](./img/radix_hash_join.png)
+  ![image not found](./img/radix_hash_join.png)
 
-    *Image above illustrates the three phases of Radix Hash Join Algorithm*
+  *Image above illustrates the three phases of Radix Hash Join Algorithm*
 
 
 * #### Multithreading
 
-  We managed to speed up our serial implementation by applying multithreading  on various parts of our code, such as filter execution, histogram creation, indexing on the buckets, probing e.t.c. For this purpose, POSIX Threads were used.
+  We managed to speed up our serial implementation by applying multithreading  on various parts of our code, such as filter execution, histogram creation, bucket indexing, probing e.t.c. We decided to make use of POSIX Threads for this purpose. The following graphs depict the satisfactory speedup we achieved.
+
+  ![image not found](./img/plot2.png)
+
+  The above graph shows the correlation between execution time and number of threads using the [small](./final/workloads/small) dataset. For this test we used a machine from the Linux lab of our department (Intel i5-6500 3.2 GHz, 4 cores, 4 threads | 16 GB RAM )
 
   ![image not found](./img/plot1.png)
 
-  The above graph shows the correlation between execution time and number of threads. We used the *public* dataset which can be downloaded from [here](http://sigmod18contest.db.in.tum.de/public.tar.gz).
+  The above graph shows the correlation between execution time and number of threads using the *public* dataset which can be downloaded from [here](http://sigmod18contest.db.in.tum.de/public.tar.gz).
 
   Our machine's specifications are:
    * CPU: Ryzen 2400G 3.6 GHz , 4 cores , 8 threads
@@ -59,8 +63,7 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 
 ## Memory checking
 
-You may run a memory check using valgrind by uncommenting the line you want in *run.sh* script.
-
+You may run a memory check using valgrind by uncommenting the line you wish in [run.sh](./final/run.sh) script.
 
 ## Authors
 
