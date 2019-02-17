@@ -12,15 +12,16 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 ## Implementation
 
 * #### Radix Hash Join
-The main idea of Radix Hash Join algorithm is to partition the input data of the two join relations in a number of buckets, so that the largest bucket can fit into the CPU cache. More precisely, the RHS algorithm consists of the following three phases:
 
-  * **Partition**
+  The main idea of Radix Hash Join algorithm is to partition the input data of the two join relations in a number of buckets, so that the largest bucket can fit into the CPU cache. More precisely, the RHS algorithm consists of the following three phases:
 
-    We partition the data of each relation in a number of buckets using the same hash function (HASH_FUN_1) for both relations. In our implementation HASH_FUN_1 uses that n least-significant bits of the record to determine its bucket. Moreover, histogram and prefix sum tables need to be calculated for each one of the two relations.
+   * **Partition**
 
-  * **Build**  
+     We partition the data of each relation in a number of buckets using the same hash function (HASH_FUN_1) for both relations. In our implementation HASH_FUN_1 uses that n least-significant bits of the record to determine its bucket. Moreover, histogram and prefix sum tables need to be calculated for each one of the two relations.
 
-    An index is created for each of the partitions (i.e: buckets) of the smallest relation. Each index resembles a hash table using two arrays (chain array and bucket array). Those arrays are used to store indices of the corresponding bucket according to the hash value of a new hash function (HASH_FUN_2).
+   * **Build**
+
+     An index is created for each of the partitions (i.e: buckets) of the smallest relation. Each index resembles a hash table using two arrays (chain array and bucket array). Those arrays are used to store indices of the corresponding bucket according to the hash value of a new hash function (HASH_FUN_2).
 
   * **Probe**
 
