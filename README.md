@@ -27,7 +27,6 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 
     Partitions of the non-indexed, i.e: big, relation are scanned and the respective index is probed for matching tuples.
 
-    <img> </img>
     ![image not found](./img/radix_hash_join.png)
 
     *Image above illustrates the three phases of Radix Hash Join Algorithm*
@@ -37,21 +36,26 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 
   We managed to speed up our serial implementation by applying multithreading  on various parts of our code, such as filter execution, histogram creation, indexing on the buckets, probing e.t.c. For this purpose, POSIX Threads were used.
 
+  ![image not found](./img/plot1.png)
 
+  The above graph shows the correlation between execution time and number of threads. We used the *public* dataset which can be downloaded from [here](http://sigmod18contest.db.in.tum.de/public.tar.gz).
 
+  Our machine's specifications are:
+   * CPU: Ryzen 2400G 3.6 GHz , 4 cores , 8 threads
+   * RAM: 16GB DDR4 dual-channel
 
 ## Usage
 
-  * Move to final folder
-  * Type ``./compile.sh && ./runTestHarness.sh``
+  * ``cd final``
+  * ``./compile.sh && ./runTestHarness.sh``
 
 ## Unit Testing
 
   For unit testing we use the [CUnit](http://cunit.sourceforge.net/index.html) testing framework. Tests are added to different suites, each one being responsible for testing a specific category of functions. In order to run the tests CUnit must be [installed](http://archive15.fossology.org/projects/fossology/wiki/Installing_CUnit) on your system.  
 
 #### Running the tests
-  * Move to final folder
-  * Type ``make unittest && ./runUnitTesting.sh``
+  * ``cd final``
+  * ``make unittest && ./runUnitTesting.sh``
 
 ## Memory checking
 

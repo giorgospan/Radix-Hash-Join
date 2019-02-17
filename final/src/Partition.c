@@ -12,8 +12,8 @@
 #include "Utils.h"
 #include "Vector.h"
 
-#define PARALLEL_PARTITION 0
-#define PARALLEL_HISTOGRAM 0
+#define PARALLEL_PARTITION 1
+#define PARALLEL_HISTOGRAM 1
 
 void histFunc(void* arg)
 {
