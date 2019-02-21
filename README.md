@@ -11,6 +11,15 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 
 ## Implementation
 
+
+* #### Query Execution
+
+  Firstly, we collect various statistics concerning the input relations, such as max/min value, approximate number of discrete values e.t.c during the pre-processing stage.
+  We utilize those stats to find the optimal join order for each query before starting its execution.
+
+  During the execution of the query we use an intermediate result structure to store the tuples resulted from each predicate, either a filter or a join. By doing that we manage to avoid scanning a relation from top to bottom multiple times when present in more than one predicates.
+
+
 * #### Radix Hash Join
 
   The main idea of Radix Hash Join algorithm is to partition the input data of the two join relations in a number of buckets, so that the largest bucket can fit into the CPU cache. More precisely, the RHS algorithm consists of the following three phases:
@@ -61,9 +70,23 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
   * ``cd final``
   * ``make unittest && ./runUnitTesting.sh``
 
-## Memory checking
+## Profiling
 
-You may run a memory check using valgrind by uncommenting the line you wish in [run.sh](./final/run.sh) script.
+This pie graph was generated using [callgrind's](http://valgrind.org/docs/manual/cl-manual.html#cl-manual.options.separation) function cost mechanism.
+
+![image not found](./img/cost.png)
+
+1. constructTuple : creates a new tuple that will be added to the join result
+
+2. insertAtVector : inserts the tuple into the result vector
+
+3. joinFunc : this is the function where phase 3 (Probing) is implemented
+
+4. checkSumFunc : calculates checksums after query's execution is finished
+
+5. partition : this is where phase 2 (partition) happens
+
+You may also run a memory check using valgrind by uncommenting the line you wish in [run.sh](./final/run.sh) script.
 
 ## Authors
 
@@ -74,3 +97,5 @@ You may run a memory check using valgrind by uncommenting the line you wish in [
 
   * Cagri Balkesen, Jens Teubner, Gustavo Alonso, and M. Tamer Özsu
   [Main-Memory Hash Joins on Multi-Core CPUs: Tuning to the Underlying Hardware](https://15721.courses.cs.cmu.edu/spring2016/papers/balkesen-icde2013.pdf)
+
+  *
