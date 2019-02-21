@@ -72,19 +72,19 @@ Additionally, it is worth mentioning that the whole project is based on the [SIG
 
 ## Profiling
 
-This pie graph was generated using [callgrind's](http://valgrind.org/docs/manual/cl-manual.html#cl-manual.options.separation) function cost mechanism.
+This pie graph was generated using profiling data collected by  [callgrind's](http://valgrind.org/docs/manual/cl-manual.html#cl-manual.options.separation) function cost mechanism.
 
 ![image not found](./img/cost.png)
 
-1. constructTuple : creates a new tuple that will be added to the join result
+1. `constructTuple` : creates a new tuple that will be added to the join result
 
-2. insertAtVector : inserts the tuple into the result vector
+2. `insertAtVector` : inserts the tuple into the result vector
 
-3. joinFunc : this is the function where phase 3 (Probing) is implemented
+3. `joinFunc` : this is the function where phase 3 (Probing) is implemented
 
-4. checkSumFunc : calculates checksums after query's execution is finished
+4. `checkSumFunc` : calculates checksums after query's execution is finished
 
-5. partition : this is where phase 2 (partition) happens
+5. `partition` : this is where phase 2 (partition) happens
 
 You may also run a memory check using valgrind by uncommenting the line you wish in [run.sh](./final/run.sh) script.
 
@@ -98,4 +98,3 @@ You may also run a memory check using valgrind by uncommenting the line you wish
   * Cagri Balkesen, Jens Teubner, Gustavo Alonso, and M. Tamer Özsu
   [Main-Memory Hash Joins on Multi-Core CPUs: Tuning to the Underlying Hardware](https://15721.courses.cs.cmu.edu/spring2016/papers/balkesen-icde2013.pdf)
 
-  *
