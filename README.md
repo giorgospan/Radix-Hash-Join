@@ -89,8 +89,8 @@ You may also run a memory check using valgrind by uncommenting the line you wish
 
 ## Authors
 
-  * George Panagiotopoulos [giorgospan](https://github.com/giorgospan)
-  * John Papastamou [JohnThePriest](https://github.com/JohnThePriest)
+  * George Panagiotopoulos - [giorgospan](https://github.com/giorgospan)
+  * John Papastamou - [JohnThePriest](https://github.com/JohnThePriest)
 
 ## References
 
