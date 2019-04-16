@@ -89,8 +89,8 @@ You may also run a memory check using valgrind by uncommenting the line you wish
 
 ## Authors
 
-  * Panagiotopoulos Georgios <sdi1400136@di.uoa.gr>
-  * Papastamou Ioannis <sdi1400252@di.uoa.gr>
+  * George Panagiotopoulos @giorgospan
+  * John Papastamou @JohnThePriest 
 
 ## References
 
